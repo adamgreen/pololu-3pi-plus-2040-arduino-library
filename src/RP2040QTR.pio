@@ -1,0 +1,81 @@
+/* Copyright 2023 Adam Green (https://github.com/adamgreen/)
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+; Use the RP2040's PIO state machines to read the 7 QTR light sensors on the
+; 3π+ 2040 robot. It is a C/C++ port of Pololu's MicroPython code.
+.program RP2040QTR
+    ; Set OSR to 32 bits of 1s for future shifting out to intialize pindirs,
+    ; y, y again, and x. This requires 7 + 6 + 10 + 7 = 30 bits.
+    mov osr, !null
+
+    ; Set pindirs to 7 bits of 1s to enable output and start charging the capacitor.
+    out pindirs, 7
+
+    ; Charge up the capacitors for ~8us.
+    ; Set Y counter to 63 by pulling another 6 bits from OSR.
+    out y, 6
+charge:
+    jmp y-- charge
+
+    ; Load 1023 (10 bits of 1s) into Y as a counter
+    out y, 10
+
+    ; Initialize X (last pin state) to 7 bits of 1s.
+    out x, 7
+
+    ; Set pins back to inputs by writing 0s to pindirs.
+    mov osr, null
+    out pindirs, 7
+
+    ; Loop is 8 instructions long = 1us
+loop:
+    ; Read 7 pins into ISR
+    in pins, 7
+
+    ; Save Y (current count) in OSR
+    mov osr, y
+
+    ; Compare X (last pin state) to ISR (current pin state).
+    mov y, isr
+    jmp x!=y changed
+
+    ; Discard the pin values from ISR and decrement shift counter.
+    mov isr, null
+    jmp decrement
+
+    ; One or more pins have changed!
+changed:
+    ; Save current pin state into X (last pin state).
+    mov x, y
+
+    ; Shift another 16 bits of the current counter from OSR into ISR.
+    ; With the 7 current pin state bits that are already in the ISR, the auto push threshold of 23 will be hit.
+    in osr, 16
+
+decrement:
+    ; Restore the current count from the OSR into Y before looping back around.
+    mov y, osr
+    ; Decrement the counter and loop.
+    jmp y-- loop
+
+    ; Y counter has been decremented to -1.
+finish:
+    ; Send 0xFFFFFFFF to tell the CPU we are done.
+    in y, 32
+
+    ; Hang state machine here at end of sampling process.
+.wrap_target
+    nop
+.wrap
