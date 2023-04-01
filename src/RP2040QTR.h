@@ -126,7 +126,17 @@ namespace Pololu3piPlus2040
 
                 // Restart the state machine to see how long the capacitor takes to discharge through the QTR.
                 pio_sm_set_enabled(m_pio, m_stateMachine, false);
+                // Initialize the registers in the state machine so that I don't need to waste precious PIO code space.
+                // Set OSR to 32 bits of 1s for future shifting out to initialize y, x, pindirs, and y again. This
+                // requires 7 + 6 + 10 + 7 = 30 bits.
+                pio_sm_exec(m_pio, m_stateMachine, pio_encode_mov_not(pio_osr, pio_null));
+                // Set Y counter to 63 by pulling 6 high bits from OSR. At 8MHz this results in ~8us of charge time.
+                pio_sm_exec(m_pio, m_stateMachine, pio_encode_out(pio_y, 6));
+                // Initialize X (last pin state) to 7 bits of 1s.
+                pio_sm_exec(m_pio, m_stateMachine, pio_encode_out(pio_x, 7));
+                // Reset the program counter back to the beginning of the program.
                 pio_sm_exec(m_pio, m_stateMachine, pio_encode_jmp(m_codeOffset));
+                // Start the state machine up again.
                 pio_sm_set_enabled(m_pio, m_stateMachine, true);
                 m_state = READING_BUMPER;
             }

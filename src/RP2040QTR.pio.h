@@ -12,38 +12,35 @@
 // RP2040QTR //
 // --------- //
 
-#define RP2040QTR_wrap_target 19
-#define RP2040QTR_wrap 19
+#define RP2040QTR_wrap_target 16
+#define RP2040QTR_wrap 16
 
 static const uint16_t RP2040QTR_program_instructions[] = {
-    0xa0eb, //  0: mov    osr, !null                 
-    0x6087, //  1: out    pindirs, 7                 
-    0x6046, //  2: out    y, 6                       
-    0x0083, //  3: jmp    y--, 3                     
-    0x604a, //  4: out    y, 10                      
-    0x6027, //  5: out    x, 7                       
-    0xa0e3, //  6: mov    osr, null                  
-    0x6087, //  7: out    pindirs, 7                 
-    0x4007, //  8: in     pins, 7                    
-    0xa0e2, //  9: mov    osr, y                     
-    0xa046, // 10: mov    y, isr                     
-    0x00ae, // 11: jmp    x != y, 14                 
-    0xa0c3, // 12: mov    isr, null                  
-    0x0010, // 13: jmp    16                         
-    0xa022, // 14: mov    x, y                       
-    0x40f0, // 15: in     osr, 16                    
-    0xa047, // 16: mov    y, osr                     
-    0x0088, // 17: jmp    y--, 8                     
-    0x4040, // 18: in     y, 32                      
+    0x6087, //  0: out    pindirs, 7                 
+    0x0081, //  1: jmp    y--, 1                     
+    0x604a, //  2: out    y, 10                      
+    0xa0e3, //  3: mov    osr, null                  
+    0x6087, //  4: out    pindirs, 7                 
+    0x4007, //  5: in     pins, 7                    
+    0xa0e2, //  6: mov    osr, y                     
+    0xa046, //  7: mov    y, isr                     
+    0x00ab, //  8: jmp    x != y, 11                 
+    0xa0c3, //  9: mov    isr, null                  
+    0x000d, // 10: jmp    13                         
+    0xa022, // 11: mov    x, y                       
+    0x40f0, // 12: in     osr, 16                    
+    0xa047, // 13: mov    y, osr                     
+    0x0085, // 14: jmp    y--, 5                     
+    0x4040, // 15: in     y, 32                      
             //     .wrap_target
-    0xa042, // 19: nop                               
+    0xa042, // 16: nop                               
             //     .wrap
 };
 
 #if !PICO_NO_HARDWARE
 static const struct pio_program RP2040QTR_program = {
     .instructions = RP2040QTR_program_instructions,
-    .length = 20,
+    .length = 17,
     .origin = -1,
 };
 

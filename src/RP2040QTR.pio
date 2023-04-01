@@ -14,26 +14,28 @@
 */
 
 ; Use the RP2040's PIO state machines to read the 7 QTR light sensors on the
-; 3π+ 2040 robot. It is a C/C++ port of Pololu's MicroPython code.
+; 3π+ 2040 robot.
+;
+; This is a C/C++ port of Pololu's MicroPython code.
 .program RP2040QTR
-    ; Set OSR to 32 bits of 1s for future shifting out to intialize pindirs,
-    ; y, y again, and x. This requires 7 + 6 + 10 + 7 = 30 bits.
-    mov osr, !null
+    ; The CPU initializes a few of the registers before this PIO program is restarted.
+    ;   OSR = 19 bits of 1s for future shifting out to intialize pindirs and Y.
+    ;         This requires 7 + 10  = 17 bits.
+    ;   Y = 63 this will result in the loop at 'change' below delaying for ~8usec.
+    ;   X = 7 bits of 1s as the last pin state.
 
+    ; OSR already contains 19 bits of 1s put there by the CPU before restarting the state machine.
     ; Set pindirs to 7 bits of 1s to enable output and start charging the capacitor.
     out pindirs, 7
 
     ; Charge up the capacitors for ~8us.
-    ; Set Y counter to 63 by pulling another 6 bits from OSR.
-    out y, 6
+    ; Y was initialized already by the CPU before restarting the state machine.
 charge:
     jmp y-- charge
 
+    ; Use bits still in OSR from previous CPU initialization.
     ; Load 1023 (10 bits of 1s) into Y as a counter
     out y, 10
-
-    ; Initialize X (last pin state) to 7 bits of 1s.
-    out x, 7
 
     ; Set pins back to inputs by writing 0s to pindirs.
     mov osr, null
