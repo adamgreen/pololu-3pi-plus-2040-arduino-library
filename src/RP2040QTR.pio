@@ -19,16 +19,16 @@
 ; This is a C/C++ port of Pololu's MicroPython code.
 .program RP2040QTR
     ; The CPU initializes a few of the registers before this PIO program is restarted.
-    ;   OSR = 19 bits of 1s for future shifting out to intialize pindirs and Y.
+    ;   OSR = 17 bits of 1s for future shifting out to intialize pindirs and Y.
     ;         This requires 7 + 10  = 17 bits.
-    ;   Y = 63 this will result in the loop at 'change' below delaying for ~8usec.
+    ;   Y = 255 this will result in the loop at 'change' below delaying for ~32usec.
     ;   X = 7 bits of 1s as the last pin state.
 
     ; OSR already contains 19 bits of 1s put there by the CPU before restarting the state machine.
     ; Set pindirs to 7 bits of 1s to enable output and start charging the capacitor.
     out pindirs, 7
 
-    ; Charge up the capacitors for ~8us.
+    ; Charge up the capacitors for ~32us.
     ; Y was initialized already by the CPU before restarting the state machine.
 charge:
     jmp y-- charge

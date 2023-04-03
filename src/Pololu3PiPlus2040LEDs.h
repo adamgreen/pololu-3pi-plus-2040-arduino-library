@@ -106,16 +106,20 @@ namespace Pololu3piPlus2040
             static const PinName csPin = NC;
             static const size_t  dataSize = 4 + ledCount * 4 + (ledCount + 14) / 16;
 
-            SharedSPI* m_pSPI;
-            char       m_data[dataSize];
-            char       m_dummy[dataSize];
-
         public:
             TRGBLEDs()
             {
                 m_pSPI = SharedSPI::getSharedSPI();
                 memset(m_data, 0, sizeof(m_data));
-                setBrightness(31);
+                for (size_t led = 0 ; led < ledCount ; led++)
+                {
+                    setBrightnessInternal(led, 31);
+                }
+            }
+
+            void setAutoShow(bool enableAutoShow)
+            {
+                m_autoShow = enableAutoShow;
             }
 
             void show()
@@ -126,7 +130,8 @@ namespace Pololu3piPlus2040
             void setBrightness(size_t led, uint8_t brightness)
             {
                 assert ( led < ledCount );
-                m_data[(led+1)*4] = 0xE0 | (brightness & 0x1F);
+                setBrightnessInternal(led, brightness);
+                autoShow();
                 return;
             }
 
@@ -134,33 +139,36 @@ namespace Pololu3piPlus2040
             {
                 for (size_t led = 0 ; led < ledCount ; led++)
                 {
-                    setBrightness(led, brightness);
+                    setBrightnessInternal(led, brightness);
                 }
+                autoShow();
             }
 
-            void set(size_t led, const RGB* pRGB)
+            void set(size_t led, const RGB& rgb)
             {
                 assert ( led < ledCount );
 
-                m_data[4 + led*4 + 1] = pRGB->b;
-                m_data[4 + led*4 + 2] = pRGB->g;
-                m_data[4 + led*4 + 3] = pRGB->r;
+                m_data[4 + led*4 + 1] = rgb.b;
+                m_data[4 + led*4 + 2] = rgb.g;
+                m_data[4 + led*4 + 3] = rgb.r;
+                autoShow();
             }
 
-            void set(size_t led, const RGB* pRGB, uint8_t brightness)
+            void set(size_t led, const RGB& rgb, uint8_t brightness)
             {
                 assert ( led < ledCount );
 
-                setBrightness(led, brightness);
-                set(led, pRGB);
+                setBrightnessInternal(led, brightness);
+                set(led, rgb);
+                autoShow();
             }
 
-            void set(size_t led, const HSV* pHSV, uint32_t hScale=360)
+            void set(size_t led, const HSV& hsv, uint32_t hScale=360)
             {
                 assert ( led < ledCount );
 
-                RGB rgb = hsv2rgb(pHSV->h, pHSV->s, pHSV->v, hScale);
-                set(led, &rgb);
+                RGB rgb = hsv2rgb(hsv.h, hsv.s, hsv.v, hScale);
+                set(led, rgb);
             }
 
             RGB hsv2rgb(uint8_t h, uint8_t s, uint8_t v, uint32_t hScale=360)
@@ -201,10 +209,30 @@ namespace Pololu3piPlus2040
             {
                 for (size_t led = 0 ; led < ledCount ; led++)
                 {
-                    set(led, &BLACK);
+                    set(led, BLACK);
                 }
                 show();
             }
+
+        protected:
+            void setBrightnessInternal(size_t led, uint8_t brightness)
+            {
+                m_data[(led+1)*4] = 0xE0 | (brightness & 0x1F);
+            }
+
+            void autoShow()
+            {
+                if (!m_autoShow)
+                {
+                    return;
+                }
+                show();
+            }
+
+            SharedSPI* m_pSPI;
+            bool       m_autoShow = true;
+            char       m_data[dataSize];
+            char       m_dummy[dataSize];
     };
 
 

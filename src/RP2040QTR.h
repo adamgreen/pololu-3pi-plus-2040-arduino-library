@@ -28,10 +28,39 @@
 
 namespace Pololu3piPlus2040
 {
+    #define BUMP_SENSOR_COUNT 2
+    #define LINE_SENSOR_COUNT 5
+    #define LIGHT_SENSOR_COUNT (BUMP_SENSOR_COUNT + LINE_SENSOR_COUNT)
+
     struct BumperSensorReadings
     {
-        uint32_t left;
-        uint32_t right;
+        union
+        {
+            struct
+            {
+                uint16_t right;
+                uint16_t left;
+            };
+            uint16_t vals[2];
+        };
+    };
+
+    struct LineSensorReadings
+    {
+        uint16_t vals[LINE_SENSOR_COUNT];
+    };
+
+    struct QTRSensorReadings
+    {
+        union
+        {
+            struct
+            {
+                BumperSensorReadings bumperReadings;
+                LineSensorReadings lineReadings;
+            };
+            uint16_t raw[LIGHT_SENSOR_COUNT];
+        };
     };
 
     class QTRSensors
@@ -39,30 +68,21 @@ namespace Pololu3piPlus2040
         protected:
             // The 7 analog light sensors start at this pin. Must be continuous to work with the PIO.
             static const uint32_t lightSensorPinBase = 16;
-            static const uint32_t lightSensorPinCount = 7;
-
-            RP2040SIO::Pin<23> bumperEmitterPin;
+            static const uint32_t lightSensorPinCount = LIGHT_SENSOR_COUNT;
 
             PIO      m_pio = pio0;
             int32_t  m_stateMachine = -1;
             uint32_t m_codeOffset = 0;
             enum {
                 IDLE,
-                READING_BUMPER,
-                READING_DOWN
+                READING,
             }  m_state = IDLE;
 
         public:
             static const uint32_t TIMEOUT = 1024;
 
-            bool init()
+            QTRSensors()
             {
-                // Just return if already initialized.
-                if (m_stateMachine != -1)
-                {
-                    return true;
-                }
-
                 // Make sure that there is enough room to load this program into one of the PIO instances.
                 m_pio = pio0;
                 if (!pio_can_add_program(m_pio, &RP2040QTR_program) )
@@ -70,7 +90,8 @@ namespace Pololu3piPlus2040
                     m_pio = pio1;
                     if (!pio_can_add_program(m_pio, &RP2040QTR_program) )
                     {
-                        return false;
+                        assert ( !"No free PIO" );
+                        return;
                     }
                 }
                 m_codeOffset = pio_add_program(m_pio, &RP2040QTR_program);
@@ -80,7 +101,8 @@ namespace Pololu3piPlus2040
                 if (m_stateMachine < 0)
                 {
                     // No free state machines so return a failure code.
-                    return false;
+                    assert ( !"No free state machines" );
+                    return;
                 }
 
                 // Connect the 7 sensor pins to the PIO peripheral for output.
@@ -109,43 +131,42 @@ namespace Pololu3piPlus2040
                 float div = (float)clock_get_hz(clk_sys) / 8000000.0f;
                 sm_config_set_clkdiv(&smConfig, div);
                 pio_sm_init(m_pio, m_stateMachine, m_codeOffset, &smConfig);
-
-                return true;
             }
 
             void startRead()
             {
-                init();
-                if (m_state == READING_BUMPER)
+                if (m_state == READING)
                 {
                     return;
                 }
-
-                // Turn emitter LED on.
-                bumperEmitterPin.setOutputHigh();
 
                 // Restart the state machine to see how long the capacitor takes to discharge through the QTR.
                 pio_sm_set_enabled(m_pio, m_stateMachine, false);
                 // Initialize the registers in the state machine so that I don't need to waste precious PIO code space.
                 // Set OSR to 32 bits of 1s for future shifting out to initialize y, x, pindirs, and y again. This
-                // requires 7 + 6 + 10 + 7 = 30 bits.
+                // requires 7 + 8 + 10 + 7 = 32 bits.
                 pio_sm_exec(m_pio, m_stateMachine, pio_encode_mov_not(pio_osr, pio_null));
-                // Set Y counter to 63 by pulling 6 high bits from OSR. At 8MHz this results in ~8us of charge time.
-                pio_sm_exec(m_pio, m_stateMachine, pio_encode_out(pio_y, 6));
+                // Set Y counter to 255 by pulling 8 high bits from OSR. At 8MHz this results in ~32us of charge time.
+                pio_sm_exec(m_pio, m_stateMachine, pio_encode_out(pio_y, 8));
                 // Initialize X (last pin state) to 7 bits of 1s.
                 pio_sm_exec(m_pio, m_stateMachine, pio_encode_out(pio_x, 7));
                 // Reset the program counter back to the beginning of the program.
                 pio_sm_exec(m_pio, m_stateMachine, pio_encode_jmp(m_codeOffset));
                 // Start the state machine up again.
                 pio_sm_set_enabled(m_pio, m_stateMachine, true);
-                m_state = READING_BUMPER;
+                m_state = READING;
             }
 
-            BumperSensorReadings read()
+            QTRSensorReadings read()
             {
                 startRead();
 
-                BumperSensorReadings readings = { .left = TIMEOUT, .right = TIMEOUT };
+                QTRSensorReadings readings;
+
+                for (size_t i = 0 ; i < sizeof(readings.raw)/sizeof(readings.raw[0]) ; i++)
+                {
+                    readings.raw[i] = TIMEOUT;
+                }
                 uint32_t lastPinStates = (1 << lightSensorPinCount) - 1;
 
                 while (true)
@@ -159,21 +180,17 @@ namespace Pololu3piPlus2040
                     uint32_t currPinStates = (val >> 16) & 0x7F;
                     uint32_t currTime = val & 0xFFFF;
                     uint32_t newZeros = lastPinStates ^ currPinStates;
-                    // UNDONE: Might be able to remove earliest switch check.
-                    if (newZeros & 0x1 && readings.right == TIMEOUT)
+                    for (size_t i = 0 ; i < sizeof(readings.raw)/sizeof(readings.raw[0]) ; i++)
                     {
-                        readings.right = TIMEOUT - currTime;
-                    }
-                    if (newZeros & 0x2 && readings.left == TIMEOUT)
-                    {
-                        readings.left = TIMEOUT - currTime;
+                        uint32_t bitmask = 1 << i;
+                        if ((newZeros & bitmask) && readings.raw[i] == TIMEOUT)
+                        {
+                            readings.raw[i] = TIMEOUT - currTime;
+                        }
                     }
                     lastPinStates = currPinStates;
                 }
                 m_state = IDLE;
-
-                // Turn emitter pin off.
-                bumperEmitterPin.setInput();
 
                 return readings;
             }

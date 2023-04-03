@@ -11,23 +11,12 @@
 namespace Pololu3piPlus2040
 {
 
-/// Bump sensor sides.
-enum BumpSide {
-  /// Left bump sensor
-  BumpLeft  = 0,
-
-  /// Right bump sensor
-  BumpRight = 1
-};
-
 /// \brief Gets readings from the two bump sensors on the front of the 3pi+
 /// 2040.
 class BumpSensors
 {
   private:
-#ifdef UNDONE
     RP2040SIO::Pin<23> emitterPin;
-#endif // UNDONE
 
   public:
     BumpSensors()
@@ -64,8 +53,8 @@ class BumpSensors
     /// bits representing each sensor are defined by the ::BumpSide enum.
     ///
     /// For example, a return value of 2 (0b10 in binary) indicates:
-    /// * The right bump sensor is pressed, since bit 1 (BumpRight) is set.
-    /// * The left bump sensor is not pressed, since bit 0 (BumpLeft) is
+    /// * The right bump sensor is pressed, since bit 0 (BumpRight) is set.
+    /// * The left bump sensor is not pressed, since bit 1 (BumpLeft) is
     ///   cleared.
     ///
     /// Instead of checking the return value of this method, you can instead
@@ -100,7 +89,7 @@ class BumpSensors
     bool rightIsPressed() { return pressed[BumpRight]; }
 
   private:
-    /// Pointer to the QTR sensor reading singleton shared with the line sensor.
+    /// Pointer to the QTR sensor reading singleton shared with the line sensors.
     QTRSensors* pQTR;
 
   public:
@@ -113,15 +102,23 @@ class BumpSensors
     uint16_t marginPercentage = 50;
 
     /// Baseline readings obtained from calibration.
-    uint16_t baseline[2];
+    BumperSensorReadings baseline;
 
     /// Thresholds for bump sensor press detection.
-    uint16_t threshold[2];
+    BumperSensorReadings threshold;
 
     /// Raw reflectance sensor readings for latest measurement.
-    uint16_t sensorValues[2];
+    BumperSensorReadings sensorValues;
 
   private:
+    /// Bump sensor sides.
+    enum BumpSide {
+    /// Right bump sensor
+    BumpRight = 0,
+
+    /// Left bump sensor
+    BumpLeft  = 1
+    };
     /// Current bumper pressed state. Used together with last[] to determine state
     /// changes.
     uint8_t pressed[2];

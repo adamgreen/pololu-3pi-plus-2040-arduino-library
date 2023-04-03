@@ -12,19 +12,17 @@
 #error "This library only supports the RP2040.  Try selecting Raspberry Pi Pico in the Boards menu."
 #endif
 
-#include "RP2040SIO.h"
 #include "Pololu3piPlus2040BumpSensors.h"
+#include "Pololu3piPlus2040Buttons.h"
 #include "Pololu3piPlus2040Buzzer.h"
 #include "Pololu3piPlus2040LEDs.h"
+#include "Pololu3piPlus2040LineSensors.h"
+#include "Pololu3piPlus2040Motors.h"
 #include "Pololu3piPlus2040OLED.h"
 
 #ifdef UNDONE
-#include <Pololu3piPlus32U4Buttons.h>
 #include <Pololu3piPlus32U4Encoders.h>
 #include <Pololu3piPlus32U4IMU_declaration.h>
-#include <Pololu3piPlus32U4LCD.h>
-#include <Pololu3piPlus32U4LineSensors.h>
-#include <Pololu3piPlus32U4Motors.h>
 #endif // UNDONE
 
 /// Top-level namespace for the Pololu3piPlus2040 library.
@@ -67,3 +65,9 @@ inline uint16_t readBatteryMillivolts()
 #endif // UNDONE
 
 }
+
+
+// By default, the Pololu3piPlus2040 namespace will be used.
+#ifndef DISABLE_POLOLU_3PI_PLUS_2040_NAMESPACE
+    using namespace Pololu3piPlus2040;
+#endif

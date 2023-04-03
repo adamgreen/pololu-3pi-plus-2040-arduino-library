@@ -1,6 +1,5 @@
 #include <Pololu3piPlus2040.h>
 
-using namespace Pololu3piPlus2040;
 BumpSensors bumpSensors;
 Buzzer buzzer;
 OLED display;
@@ -13,9 +12,8 @@ void setup()
   display.clear();
   display.gotoXY(0, 1);
   display.print("Bump me!");
-  leds.set(FRONT_LEFT_LED, &GREEN, 0);
-  leds.set(FRONT_RIGHT_LED, &RED, 0);
-  leds.show();
+  leds.set(FRONT_LEFT_LED, GREEN, 0);
+  leds.set(FRONT_RIGHT_LED, RED, 0);
 }
 
 void loop()
@@ -25,7 +23,6 @@ void loop()
   if (bumpSensors.leftChanged())
   {
     leds.setBrightness(FRONT_LEFT_LED, bumpSensors.leftIsPressed() ? 31 : 0);
-    leds.show();
 
     if (bumpSensors.leftIsPressed())
     {
@@ -46,7 +43,6 @@ void loop()
   if (bumpSensors.rightChanged())
   {
     leds.setBrightness(FRONT_RIGHT_LED, bumpSensors.rightIsPressed() ? 31 : 0);
-    leds.show();
 
     if (bumpSensors.rightIsPressed())
     {

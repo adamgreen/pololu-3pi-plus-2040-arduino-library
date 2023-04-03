@@ -87,7 +87,7 @@ namespace RP2040SIO
          * @param pullUp   If true set a pull up on the GPIO
          * @param pullDown If true set a pull down on the GPIO
          */
-        inline void init(bool isOutput, bool initOutput, bool pullUp, bool pullDown) __attribute__((always_inline))
+        static inline void init(bool isOutput, bool initOutput, bool pullUp, bool pullDown) __attribute__((always_inline))
         {
             gpio_set_function(pin, GPIO_FUNC_SIO);
             gpio_set_pulls(pin, pullUp, pullDown);
@@ -109,7 +109,7 @@ namespace RP2040SIO
          * but it has a simpler implementation which means it is more
          * likely to be compiled down to just 2 assembly instructions.
          */
-        inline void setOutputLow() __attribute__((always_inline))
+        static inline void setOutputLow() __attribute__((always_inline))
         {
             sio_hw->gpio_clr = m_mask;
             sio_hw->gpio_oe_set = m_mask;
@@ -121,7 +121,7 @@ namespace RP2040SIO
          * but it has a simpler implementation which means it is more
          * likely to be compiled down to just 2 assembly instructions.
          */
-        inline void setOutputHigh() __attribute__((always_inline))
+        static inline void setOutputHigh() __attribute__((always_inline))
         {
             sio_hw->gpio_set = m_mask;
             sio_hw->gpio_oe_set = m_mask;
@@ -135,7 +135,7 @@ namespace RP2040SIO
          * The PORT bit is set before the DDR bit to ensure that the output is
          * not accidentally driven to the wrong value during the transition.
          */
-        inline void setOutput(bool value) __attribute__((always_inline))
+        static inline void setOutput(bool value) __attribute__((always_inline))
         {
             if (value)
             {
@@ -156,7 +156,7 @@ namespace RP2040SIO
          * If this is used on an input pin, it has the effect of disabling the
          * input pin's pull-up resistor.
          */
-        inline void setOutputValueLow() __attribute__((always_inline))
+        static inline void setOutputValueLow() __attribute__((always_inline))
         {
             sio_hw->gpio_clr = m_mask;
         }
@@ -185,7 +185,7 @@ namespace RP2040SIO
          * If this function is used on an input pin, it has the effect of
          * toggling setting the state of the input pin's pull-up resistor.
          */
-        inline void setOutputValue(bool value) __attribute__((always_inline))
+        static inline void setOutputValue(bool value) __attribute__((always_inline))
         {
             if (value)
             {
@@ -200,7 +200,7 @@ namespace RP2040SIO
         /*! \brief Sets a pin to be a digital input with the internal pull-up
          *  resistor disabled.
          */
-        inline void setInput() __attribute__((always_inline))
+        static inline void setInput() __attribute__((always_inline))
         {
             sio_hw->gpio_oe_clr = m_mask;
         }
@@ -209,7 +209,7 @@ namespace RP2040SIO
          *
          * @return 0 if the pin is low, 1 if the pin is high.
          */
-        inline bool isInputHigh() __attribute__((always_inline))
+        static inline bool isInputHigh() __attribute__((always_inline))
         {
             return !!(sio_hw->gpio_in & m_mask);
         }
@@ -246,6 +246,7 @@ namespace RP2040SIO
             _FG_CBI(pinStructs[pin].ddrAddr, pinStructs[pin].bit);
             _FG_SBI(pinStructs[pin].portAddr, pinStructs[pin].bit);
         }
+#endif // UNDONE
 
         /*! \brief Returns 1 if the pin is configured as an output.
          *
@@ -253,7 +254,7 @@ namespace RP2040SIO
          */
         static inline bool isOutput() __attribute__((always_inline))
         {
-            return *pinStructs[pin].ddr() >> pinStructs[pin].bit & 1;
+            return !!(sio_hw->gpio_oe & m_mask);
         }
 
         /*! \brief Returns the output value of the pin.
@@ -264,7 +265,7 @@ namespace RP2040SIO
          */
         static inline bool isOutputValueHigh() __attribute__((always_inline))
         {
-            return *pinStructs[pin].port() >> pinStructs[pin].bit & 1;
+            return !!(sio_hw->gpio_out & m_mask);
         }
 
         /*! \brief Returns the full 2-bit state of the pin.
@@ -275,62 +276,31 @@ namespace RP2040SIO
          */
         static uint8_t getState()
         {
-            uint8_t state;
-            asm volatile(
-                "ldi  %0, 0\n"
-                "sbic %2, %1\n"
-                "ori  %0, 1\n"   // Set state bit 0 to 1 if PORT bit is set.
-                "sbic %3, %1\n"
-                "ori  %0, 2\n"   // Set state bit 1 to 1 if DDR bit is set.
-                : "=a" (state)
-                : "I" (pinStructs[pin].bit),
-                  "I" (pinStructs[pin].portAddr - __SFR_OFFSET),
-                  "I" (pinStructs[pin].ddrAddr - __SFR_OFFSET));
-            return state;
-
-            /* Equivalent C++ code:
-              return isOutput() << 1 | isOutputValueHigh();
-            */
+              return (isOutput() << 1) | isOutputValueHigh();
         }
 
         /*! \brief Sets the full 2-bit state of the pin.
          *
          * @param state The state of the pin, as returns from getState.
          * All bits other than bits 0 and 1 are ignored.
-         *
-         * Sometimes this function will need to change both the PORT bit (which
-         * specifies the output value) and the DDR bit (which specifies whether
-         * the pin is an output).  If the DDR bit is getting set to 0, this
-         * function changes DDR first, and if it is getting set to 1, this
-         * function changes DDR last.  This guarantees that the intermediate pin
-         * state is always an input state.
          */
         static void setState(uint8_t state)
         {
-            asm volatile(
-                "bst  %0, 1\n"   // Set DDR to 0 if needed
-                "brts .+2\n"
-                "cbi  %3, %1\n"
-                "bst  %0, 0\n"   // Copy state bit 0 to PORT bit
-                "brts .+2\n"
-                "cbi  %2, %1\n"
-                "brtc .+2\n"
-                "sbi  %2, %1\n"
-                "bst  %0, 1\n"   // Set DDR to 1 if needed
-                "brtc .+2\n"
-                "sbi  %3, %1\n"
-                :
-                : "a" (state),
-                  "I" (pinStructs[pin].bit),
-                  "I" (pinStructs[pin].portAddr - __SFR_OFFSET),
-                  "I" (pinStructs[pin].ddrAddr - __SFR_OFFSET));
+            if (state & 2)
+            {
+                setOutput(state & 1);
+            }
+            else
+            {
+                setInput();
+                setOutputValue(state & 1);
+            }
         }
-#endif // UNDONE
-        private:
-            static const uint32_t m_mask = 1 << pin;
+
+      private:
+        static const uint32_t m_mask = 1 << pin;
     };
 
-#ifdef UNDONE
     /*! This class saves the state of the specified pin in its constructor when
      * it is created, and restores the pin to that state in its destructor.
      * This can be very useful if a pin is being used for multiple purposes.
@@ -365,21 +335,20 @@ namespace RP2040SIO
      * }
      * ~~~
      */
-    template<uint8_t pin> class PinLoan
+    template<uint32_t pin> class PinLoan
     {
     public:
-        /*! \brief The state of the pin as returned from RP2040SIO::Pin::getState. */
-        uint8_t state;
-
         PinLoan()
         {
-            state = Pin<pin>::getState();
+            m_state = RP2040SIO::Pin<pin>::getState();
         }
 
         ~PinLoan()
         {
-            Pin<pin>::setState(state);
+            RP2040SIO::Pin<pin>::setState(m_state);
         }
+    protected:
+        /*! \brief The state of the pin as returned from RP2040SIO::Pin::getState. */
+        uint32_t m_state;
     };
-#endif // UNDONE
 };

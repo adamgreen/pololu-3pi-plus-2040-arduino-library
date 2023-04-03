@@ -8,33 +8,36 @@ namespace Pololu3piPlus2040
 
 void BumpSensors::readRaw()
 {
-  BumperSensorReadings readings = pQTR->read();
+  emitterPin.setOutputHigh();
+  QTRSensorReadings readings = pQTR->read();
+  emitterPin.setInput();
 
-  // UNDONE: Switch sensorValues to BumperSensorReadings.
-  sensorValues[BumpLeft] = readings.left;
-  sensorValues[BumpRight] = readings.right;
+  sensorValues = readings.bumperReadings;
 }
 
 void BumpSensors::calibrate(uint8_t count)
 {
-  uint32_t sum[2] = {0, 0};
+  BumperSensorReadings sum = { 0, 0 };
 
   for (uint8_t i = 0; i < count; i++)
   {
     readRaw();
-    sum[BumpLeft]  += sensorValues[BumpLeft];
-    sum[BumpRight] += sensorValues[BumpRight];
+    sum.left  += sensorValues.left;
+    sum.right += sensorValues.right;
   }
 
-  for (uint8_t s = BumpLeft; s <= BumpRight; s++)
+  for (uint8_t s = 0; s < sizeof(sum.vals)/sizeof(sum.vals[0]); s++)
   {
-    baseline[s] = (sum[s] + count / 2) / count;
+    baseline.vals[s] = (sum.vals[s] + count / 2) / count;
 
     // Calculate threshold to compare readings to by adding margin to baseline,
     // but make sure it is no larger than the QTR sensor timeout (i.e. if the
     // reading timed out, consider the bump sensor pressed).
-    threshold[s] = baseline[s] + baseline[s] * (uint32_t)marginPercentage / 100;
-    if (threshold[s] > QTRSensors::TIMEOUT) { threshold[s] = QTRSensors::TIMEOUT; }
+    threshold.vals[s] = baseline.vals[s] + baseline.vals[s] * (uint32_t)marginPercentage / 100;
+    if (threshold.vals[s] > QTRSensors::TIMEOUT)
+    {
+      threshold.vals[s] = QTRSensors::TIMEOUT;
+    }
   }
 }
 
@@ -43,10 +46,10 @@ uint8_t BumpSensors::read()
   readRaw();
 
   uint8_t bitField = 0;
-  for (uint8_t s = BumpLeft; s <= BumpRight; s++)
+  for (uint8_t s = 0; s < sizeof(pressed)/sizeof(pressed[0]); s++)
   {
     last[s] = pressed[s];
-    pressed[s] = (sensorValues[s] >= threshold[s]);
+    pressed[s] = (sensorValues.vals[s] >= threshold.vals[s]);
     bitField |= pressed[s] << s;
   }
   return bitField;

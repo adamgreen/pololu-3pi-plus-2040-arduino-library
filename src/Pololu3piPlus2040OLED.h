@@ -29,7 +29,9 @@ private:
   size_t bufferIndex = 0;
 
 public:
-  OLEDCore()
+  OLEDCore() :
+    // DC pin is shared with switch C which requires pull-up so might as well turn it on here as well.
+    dcPin(false, false, true, false)
   {
     m_pSPI = SharedSPI::getSharedSPI();
   }
