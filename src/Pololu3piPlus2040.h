@@ -15,54 +15,35 @@
 #include "Pololu3piPlus2040BumpSensors.h"
 #include "Pololu3piPlus2040Buttons.h"
 #include "Pololu3piPlus2040Buzzer.h"
+#include "Pololu3piPlus2040Encoders.h"
+#include "Pololu3piPlus2040IMU.h"
 #include "Pololu3piPlus2040LEDs.h"
 #include "Pololu3piPlus2040LineSensors.h"
 #include "Pololu3piPlus2040Motors.h"
 #include "Pololu3piPlus2040OLED.h"
 
-#ifdef UNDONE
-#include <Pololu3piPlus32U4Encoders.h>
-#include <Pololu3piPlus32U4IMU_declaration.h>
-#endif // UNDONE
 
 /// Top-level namespace for the Pololu3piPlus2040 library.
 namespace Pololu3piPlus2040
 {
 
-// TODO: servo support
-
-#ifdef UNDONE
-/// \brief Returns true if USB power is detected.
-///
-/// This function returns true if power is detected on the board's USB port and
-/// returns false otherwise.  It uses the ATmega32U4's VBUS line, which is
-/// directly connected to the power pin of the USB connector.
-///
-/// \sa A method for detecting whether the board's virtual COM port is open:
-/// http://arduino.cc/en/Serial/IfSerial
-inline bool usbPowerPresent()
-{
-    return USBSTA >> VBUS & 1;
-}
-
 /// Reads the battery voltage and returns it in millivolts.
-inline uint16_t readBatteryMillivolts()
+uint16_t readBatteryMillivolts()
 {
-    const uint8_t sampleCount = 8;
-    uint16_t sum = 0;
-    for (uint8_t i = 0; i < sampleCount; i++)
+    // Pin 26 is shared with the down emitter. The code in the LineSensors class will reconfigure to SIO mode
+    // every time it is used to enable or disable the emitter.
+    const uint32_t batteryVoltagePin = 26;
+    const uint32_t sampleCount = 10;
+    uint32_t sum = 0;
+    for (uint32_t i = 0; i < sampleCount; i++)
     {
-        sum += analogRead(A1);
+        sum += analogRead(batteryVoltagePin);
     }
 
-    // VBAT = 3 * millivolt reading = 3 * raw * 5000/1024
-    //      = raw * 1875 / 128
-    // The correction term below makes it so that we round to the
-    // nearest whole number instead of always rounding down.
-    const uint32_t correction = 64 * sampleCount - 1;
-    return ((uint32_t)sum * 1875 + correction) / (128 * sampleCount);
+    // The voltage divider steps the voltage down by 1/11th of the actual battery voltage.
+    // The analogRead readings fall in a 10-bit range.
+    return (3300 * sum * 11 + sampleCount * 511) / (sampleCount * 1023);
 }
-#endif // UNDONE
 
 }
 

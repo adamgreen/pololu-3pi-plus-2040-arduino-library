@@ -11,13 +11,12 @@ RGBLEDs leds;
 
 void setup()
 {
-  leds.setBrightness(0);
-  leds.set(FRONT_LEFT_LED, RED);
-  leds.set(FRONT_CENTER_LED, ORANGE);
-  leds.set(FRONT_RIGHT_LED, YELLOW);
-  leds.set(BACK_RIGHT_LED, GREEN);
-  leds.set(BACK_CENTER_LED, BLUE);
-  leds.set(BACK_LEFT_LED, VIOLET);
+  leds.set(FRONT_LEFT_LED, RED, 0);
+  leds.set(FRONT_CENTER_LED, ORANGE, 0);
+  leds.set(FRONT_RIGHT_LED, YELLOW, 0);
+  leds.set(BACK_RIGHT_LED, GREEN, 0);
+  leds.set(BACK_CENTER_LED, BLUE, 0);
+  leds.set(BACK_LEFT_LED, VIOLET, 0);
 }
 
 void loop()

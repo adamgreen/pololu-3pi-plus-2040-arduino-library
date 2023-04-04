@@ -105,7 +105,7 @@ public:
   /// with higher values corresponding to lower reflectance (e.g. a black
   /// surface or a void).
   ///
-  /// Analog sensors will return a raw value between 0 and 1023 (like
+  /// Analog sensors will return a raw value between 0 and 1024 (like
   /// Arduino's `analogRead()` function).
   ///
   /// RC sensors will return a raw value in microseconds between 0 and the
@@ -258,16 +258,18 @@ public:
 
   /// \}
 
+  // Since the emitter pin is shared with the analog battery voltage, use the init() routine to configure for
+  // output or input since that makes sure that the SIO function has been reselected for the pin.
   /// \brief Turns the IR LEDs on.
   void emittersOn()
   {
-    emitterPin.setOutputHigh();
+    emitterPin.init(true, true, false, false);
   }
 
   /// \brief Turns the IR LEDs off.
   void emittersOff()
   {
-    emitterPin.setInput();
+    emitterPin.init(false, false, false, false);
   }
 
 private:

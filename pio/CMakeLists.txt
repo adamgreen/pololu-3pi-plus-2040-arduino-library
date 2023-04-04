@@ -31,6 +31,7 @@ add_compile_options(-Wall
 add_executable(PioAssemblyTest)
 
 pico_generate_pio_header(PioAssemblyTest ${CMAKE_CURRENT_LIST_DIR}/RP2040QTR.pio)
+pico_generate_pio_header(PioAssemblyTest ${CMAKE_CURRENT_LIST_DIR}/RP2040Encoders.pio)
 
 target_sources(PioAssemblyTest PRIVATE
     main.cpp

@@ -53,7 +53,7 @@ void Motors::setLeftSpeed(int16_t speed)
         speed = 400;
     }
 
-    leftPWM.pulsewidth_us(map(speed, 0, 400, 0, pwmPeriod_us/2));
+    leftPWM.pulsewidth_us(map(speed, 0, 400, 0, pwmPeriod_us));
     leftDirectionPin.setOutput(reverse ^ flipLeft);
 }
 

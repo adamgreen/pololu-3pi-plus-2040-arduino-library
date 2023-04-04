@@ -16,11 +16,13 @@
 #include <stdio.h>
 #include <hardware/pio.h>
 #include <RP2040QTR.pio.h>
+#include <RP2040Encoders.pio.h>
 
 
 int main(void)
 {
     pio_add_program(pio0, &RP2040QTR_program);
+    pio_add_program(pio1, &RP2040Encoders_program);
 
     return 0;
 }

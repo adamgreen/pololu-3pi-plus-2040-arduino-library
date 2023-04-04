@@ -25,7 +25,7 @@ private:
 
   SharedSPI* m_pSPI;
 
-  char   buffer[128];
+  char   buffer[132];
   size_t bufferIndex = 0;
 
 public:
