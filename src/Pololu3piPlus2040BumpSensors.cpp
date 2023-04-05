@@ -1,7 +1,7 @@
 // Copyright (C) Pololu Corporation.  See www.pololu.com for details.
 
-#include <Pololu3piPlus2040BumpSensors.h>
-#include <RP2040SIO.h>
+#include "Pololu3piPlus2040BumpSensors.h"
+#include "RP2040SIO.h"
 
 namespace Pololu3piPlus2040
 {

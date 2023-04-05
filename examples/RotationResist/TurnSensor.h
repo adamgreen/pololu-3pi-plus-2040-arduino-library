@@ -97,7 +97,7 @@ void turnSensorSetup()
   imu.configureForTurnSensing();
 
   display.clear();
-  display.print(F("Gyro cal"));
+  display.print("Gyro cal");
 
   // Turn on the yellow LED in case the display is not available.
   ledYellow(1);
@@ -128,7 +128,7 @@ void turnSensorSetup()
     turnSensorUpdate();
     display.gotoXY(0, 0);
     display.print((((int32_t)turnAngle >> 16) * 360) >> 16);
-    display.print(F("   "));
+    display.print("   ");
   }
   display.clear();
 }

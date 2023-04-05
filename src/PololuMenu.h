@@ -11,7 +11,7 @@
 
 struct PololuMenuItem
 {
-  const __FlashStringHelper * name;
+  const char* name;
   void (* action)();
 };
 
@@ -198,8 +198,8 @@ public:
   // Set the second line of text to be displayed below each menu
   // option.  By default it displays "<A .B C>".  To replace the
   // special characters with nicer arrows and a dot, you could
-  // use F("\x7f" "A \xa5" "B C\x7e").
-  void setSecondLine(const __FlashStringHelper * text)
+  // use "\x7f" "A \xa5" "B C\x7e".
+  void setSecondLine(const char* text)
   {
     secondLine = text;
   }
@@ -218,7 +218,7 @@ private:
   char selectButtonName;
   char nextButtonName;
 
-  const __FlashStringHelper * secondLine;
+  const char * secondLine;
 
   bool lcdNeedsUpdate = true;
 };

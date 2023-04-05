@@ -1,6 +1,8 @@
 // Copyright Pololu Corporation.  For more information, see http://www.pololu.com/
 
 #include <stdint.h>
+#include <hardware/pwm.h>
+#include <hardware/clocks.h>
 #include "Pololu3piPlus2040Buzzer.h"
 
 namespace Pololu3piPlus2040
@@ -19,18 +21,40 @@ void Buzzer::playFrequency(unsigned int freq, unsigned int dur,
 {
   buzzerFinished = false;
 
-  uint32_t multiplier = 1;
-
-  if (freq & DIV_BY_10) // if frequency's DIV_BY_10 bit is set
-  {                     //  then the true frequency is freq/10
-    multiplier = 10;    //  (gives higher resolution for small freqs)
-    freq &= ~DIV_BY_10; // clear DIV_BY_10 bit
+  // If frequency's DIV_BY_10 bit is set then the true frequency is freq/10 (gives higher resolution for small freqs).
+  float flFreq = (float)freq;
+  if (freq & DIV_BY_10)
+  {
+    // Clear DIV_BY_10 bit and divide frequency by 10.
+    flFreq = (float)(freq & ~DIV_BY_10) / 10.0f;
   }
 
-  uint32_t period_us = 1000000 * multiplier / freq;
-  uint32_t pulse_width_us = period_us >> (16-volume);
-  pwm.period_us(period_us);
-  pwm.pulsewidth_us(pulse_width_us);
+  // Pick the PWM clock divisor which results in the largest wrap value (TOP).
+  float div = 1.0f;
+  float top = (float)clock_get_hz(clk_sys)/flFreq;
+  uint32_t intTop = (int)(top + 0.5f);
+  if (intTop > 65536)
+  {
+      div = top / 65536.0f;
+      assert ( div <= 255.9375f );
+      intTop = 65536;
+  }
+
+  // Initialize the PWM slice to the desired frequency.
+  gpio_set_function(buzzerPin, GPIO_FUNC_PWM);
+  uint32_t sliceNo = pwm_gpio_to_slice_num(buzzerPin);
+  pwm_config config = pwm_get_default_config();
+  pwm_config_set_clkdiv(&config, div + (1.0f / 32.0f));
+  pwm_config_set_wrap(&config, intTop-1);
+  pwm_init(sliceNo, &config, false);
+
+  // Set the duty cycle based on the volume level and then start the PWM slice once everything is configured.
+  assert ( volume <= 15 );
+  uint16_t dutyCycle = intTop >> (16-volume);
+  pwm_set_gpio_level(buzzerPin, dutyCycle);
+  pwm_set_enabled(sliceNo, true);
+
+  // Time this note for the desire duration.
   timeout.attach(mbed::callback(this, &Buzzer::timerDone), std::chrono::milliseconds(dur));
 }
 
@@ -38,7 +62,7 @@ void Buzzer::playFrequency(unsigned int freq, unsigned int dur,
 void Buzzer::timerDone()
 {
     buzzerFinished = true;
-    pwm.pulsewidth_us(0);
+    pwm_set_enabled(pwm_gpio_to_slice_num(buzzerPin), false);
     if (buzzerSequence && (play_mode_setting == PLAY_AUTOMATIC))
       nextNote();
 }
@@ -232,8 +256,7 @@ void Buzzer::play(const char *notes)
 // stop all sound playback immediately
 void Buzzer::stopPlaying()
 {
-  pwm.period_ms(1);
-  pwm.pulsewidth_us(0);
+  pwm_set_enabled(pwm_gpio_to_slice_num(buzzerPin), false);
   timeout.detach();
 
   buzzerFinished = true;

@@ -92,7 +92,7 @@ private:
 /// @brief Makes it easy to show text and graphics on the SH1106 OLED of
 /// the Pololu 3pi+ 2040 robot.
 ///
-/// This class inherits from the PololuSH1106Main class in the PololuOLED
+/// The OLED class is of class type PololuSH1106Main from the PololuOLED
 /// library, which provides almost all of its functionality.  See the
 /// [PololuOLED library documentation](https://pololu.github.io/pololu-oled-arduino/)
 /// for more information about how to use this class.
@@ -102,8 +102,6 @@ private:
 /// variety of arguments.  See the
 /// [Arduino print() documentation](http://arduino.cc/en/Serial/Print) for
 /// more information.
-class OLED : public PololuSH1106Main<OLEDCore>
-{
-};
+typedef PololuSH1106Main<OLEDCore> OLED;
 
 }

@@ -77,4 +77,5 @@ This library also references several other Arduino libraries which are used to h
 * [Pushbutton](https://github.com/pololu/pushbutton-arduino)
 
 ## Version history
-* 0.1.0 (2023-04-4): Initial release from community.
+* 0.1.1 (2023-04-4): Second alpha release from community with Motor & Buzzer PWM fixes.
+* 0.1.0 (2023-04-4): Initial alpha release from community.

@@ -223,7 +223,7 @@ void showSplash()
 // Blinks all of LEDs in sequence.
 void ledDemo()
 {
-  static const char* noteArray[7] = {"a32", "b32", "c32", "d32", "e32", "f32", "g32"};
+  static const char* noteArray[7] = {"c32", "d32", "e32", "f32", "g32", "a32", "b32"};
   static const char* nameArray[7] = {"Violet", "Blue  ", "Green ", "Yellow", "Orange", "Red   ", "yellow"};
 
   displayBackArrow();
@@ -971,7 +971,7 @@ void powerDemo()
       display.gotoXY(0, 0);
       sprintf(buf, "%5d", batteryLevel);
       display.print(buf);
-      display.print(F(" mV"));
+      display.print(" mV");
     }
   }
 }
@@ -1034,23 +1034,23 @@ void setup()
   leds.set(BACK_LEFT_LED, VIOLET, 0);
 
   static const PololuMenuItem mainMenuItems[] = {
-    { F("Power"), powerDemo },
-    { F("LineSens"), lineSensorDemo },
-    { F("BumpSens"), bumpSensorDemo },
-    { F("Inertial"), inertialDemo },
-    { F("Compass"), compassDemo },
-    { F("Motors"), motorDemo },
-    { F("Encoders"), encoderDemo },
-    { F("Spin"), spinDemo },
-    { F("LEDs"), ledDemo },
-    { F("OLED"), displayDemo },
-    { F("Music"), musicDemo },
+    { "Power", powerDemo },
+    { "LineSens", lineSensorDemo },
+    { "BumpSens", bumpSensorDemo },
+    { "Inertial", inertialDemo },
+    { "Compass", compassDemo },
+    { "Motors", motorDemo },
+    { "Encoders", encoderDemo },
+    { "Spin", spinDemo },
+    { "LEDs", ledDemo },
+    { "OLED", displayDemo },
+    { "Music", musicDemo },
   };
   mainMenu.setItems(mainMenuItems, sizeof(mainMenuItems)/sizeof(mainMenuItems[0]));
   mainMenu.setDisplay(display);
   mainMenu.setBuzzer(buzzer);
   mainMenu.setButtons(buttonA, buttonB, buttonC);
-  mainMenu.setSecondLine(F("\x7f" "A \xa5" "B C\x7e"));
+  mainMenu.setSecondLine("\x7f" "A \xa5" "B C\x7e");
 
   initInertialSensors();
 

@@ -16,7 +16,7 @@ static bool flipRight = false;
 
 // PWM frequency of 20kHz.
 const uint32_t pwmFrequency = 20000;
-const uint32_t pwmPeriod_us = 10000000 / pwmFrequency;
+const uint32_t pwmPeriod_us = 1000000 / pwmFrequency;
 
 // initialize timer1 to generate the proper PWM outputs to the motor drivers
 void Motors::init2()
@@ -73,7 +73,7 @@ void Motors::setRightSpeed(int16_t speed)
         speed = 400;
     }
 
-    rightPWM.pulsewidth_us(map(speed, 0, 400, 0, pwmPeriod_us/2));
+    rightPWM.pulsewidth_us(map(speed, 0, 400, 0, pwmPeriod_us));
     rightDirectionPin.setOutput(reverse ^ flipRight);
 }
 

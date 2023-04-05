@@ -3,12 +3,11 @@
 /*! \file RP2040SIO.h
 
 RP2040SIO is a C++ header library for efficient RP2040 I/O. It makes use of the
-SIO peripheral to gain fast access to individual pins on the device. It doesn't
-use static functions like the AVR FastGPIO library since each pin needs to be
-configured for use with the SIO peripheral and the best place to do this is
-from an object constructor. The pin bitmask is still a static constant so the
-code generated can contain the necessary bitmask directly in the code and not
-need to be calculated at runtime.
+SIO peripheral to gain fast access to individual pins on the device. You can
+construct a RP2040SIO::Pin object and have its constructor configure the pin for
+SIO access or do this manually yourself and just call the static Pin methods.
+The pin bitmask is a static constant so the code generated can contain the
+necessary bitmask directly in the code and not need to be calculated at runtime.
 
 The RP2040SIO::Pin class provides inline methods for manipulating pins.  See
 its class reference for more information.
@@ -52,8 +51,6 @@ void loop() {
 #error "This library only supports the RP2040.  Try selecting Raspberry Pi Pico in the Boards menu."
 #endif
 
-// UNDONE: I have only implemented the methods which have actually been used and tested during the port of the
-// Pololu3piPlus2040 Arduino library.
 namespace RP2040SIO
 {
     template<uint32_t pin> class Pin
@@ -152,9 +149,6 @@ namespace RP2040SIO
          *
          * This is mainly intended to be used on pins that have already been
          * configured as an output in order to make the output drive low.
-         *
-         * If this is used on an input pin, it has the effect of disabling the
-         * input pin's pull-up resistor.
          */
         static inline void setOutputValueLow() __attribute__((always_inline))
         {
@@ -165,9 +159,6 @@ namespace RP2040SIO
          *
          * This is mainly intended to be used on pins that have already been
          * configured as an output in order to make the output drive low.
-         *
-         * If this is used on an input pin, it has the effect of enabling the
-         * input pin's pull-up resistor.
          */
         static inline void setOutputValueHigh() __attribute__((always_inline))
         {
@@ -181,9 +172,6 @@ namespace RP2040SIO
          *
          * This is mainly intended to be used on pins that have already been
          * configured as an output.
-         *
-         * If this function is used on an input pin, it has the effect of
-         * toggling setting the state of the input pin's pull-up resistor.
          */
         static inline void setOutputValue(bool value) __attribute__((always_inline))
         {
@@ -197,8 +185,7 @@ namespace RP2040SIO
             }
         }
 
-        /*! \brief Sets a pin to be a digital input with the internal pull-up
-         *  resistor disabled.
+        /*! \brief Sets a pin to be a digital input.
          */
         static inline void setInput() __attribute__((always_inline))
         {
@@ -214,13 +201,12 @@ namespace RP2040SIO
             return !!(sio_hw->gpio_in & m_mask);
         }
 
-#ifdef UNDONE
         /*! \brief Configures the pin to be an output and toggles it.
          */
         static inline void setOutputToggle() __attribute__((always_inline))
         {
-            setOutputValueToggle();
-            _FG_SBI(pinStructs[pin].ddrAddr, pinStructs[pin].bit);
+            sio_hw->gpio_togl = m_mask;
+            sio_hw->gpio_oe_set = m_mask;
         }
 
         /*! \brief Toggles the output value of the pin.
@@ -229,13 +215,10 @@ namespace RP2040SIO
          * configured as an output.  If the pin was driving low, this function
          * changes it to drive high.  If the pin was driving high, this function
          * changes it to drive low.
-         *
-         * If this function is used on an input pin, it has the effect of
-         * toggling the state of the input pin's pull-up resistor.
          */
         static inline void setOutputValueToggle() __attribute__((always_inline))
         {
-            _FG_SBI(pinStructs[pin].pinAddr, pinStructs[pin].bit);
+            sio_hw->gpio_togl = m_mask;
         }
 
         /*! \brief Sets a pin to be a digital input with the internal pull-up
@@ -243,10 +226,8 @@ namespace RP2040SIO
          */
         static inline void setInputPulledUp() __attribute__((always_inline))
         {
-            _FG_CBI(pinStructs[pin].ddrAddr, pinStructs[pin].bit);
-            _FG_SBI(pinStructs[pin].portAddr, pinStructs[pin].bit);
+            init(false, false, true, false);
         }
-#endif // UNDONE
 
         /*! \brief Returns 1 if the pin is configured as an output.
          *
@@ -260,8 +241,7 @@ namespace RP2040SIO
         /*! \brief Returns the output value of the pin.
          *
          * This is mainly intended to be called on pins that have been
-         * configured an an output.  If it is called on an input pin, the return
-         * value indicates whether the pull-up resistor is enabled or not.
+         * configured an an output.
          */
         static inline bool isOutputValueHigh() __attribute__((always_inline))
         {

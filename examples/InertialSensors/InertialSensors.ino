@@ -34,7 +34,7 @@ void setup()
     ledYellow(1);
     while(1)
     {
-      Serial.println(F("Failed to initialize IMU sensors."));
+      Serial.println("Failed to initialize IMU sensors.");
       delay(100);
     }
   }

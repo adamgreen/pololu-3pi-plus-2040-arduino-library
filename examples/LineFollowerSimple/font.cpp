@@ -37,5 +37,5 @@
 // still have the original font.
 
 #define static extern
-#define font_bits unused_placeholder; extern const uint8_t PROGMEM pololuOledFont
+#define font_bits unused_placeholder; extern const uint8_t pololuOledFont
 #include "extended_lcd_font.h"

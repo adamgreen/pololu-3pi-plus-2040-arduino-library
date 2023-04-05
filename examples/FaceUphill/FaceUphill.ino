@@ -60,15 +60,15 @@ PololuMenu menu;
 void selectEdition()
 {
   display.clear();
-  display.print(F("Select"));
+  display.print("Select");
   display.gotoXY(0,1);
-  display.print(F("edition"));
+  display.print("edition");
   delay(1000);
 
   static const PololuMenuItem items[] = {
-    { F("Standard"), selectStandard },
-    { F("Turtle"), selectTurtle },
-    { F("Hyper"), selectHyper },
+    { "Standard", selectStandard },
+    { "Turtle", selectTurtle },
+    { "Hyper", selectHyper },
   };
 
   menu.setItems(items, 3);
@@ -115,10 +115,10 @@ void loop()
     lastDisplayTime = millis();
     display.gotoXY(0, 0);
     display.print(x);
-    display.print(F("       "));
+    display.print("       ");
     display.gotoXY(0, 1);
     display.print(y);
-    display.print(F("       "));
+    display.print("       ");
   }
 
   // Use the encoders to see how much we should drive forward.

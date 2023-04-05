@@ -96,15 +96,15 @@ PololuMenu menu;
 void selectEdition()
 {
   display.clear();
-  display.print(F("Select"));
+  display.print("Select");
   display.gotoXY(0,1);
-  display.print(F("edition"));
+  display.print("edition");
   delay(1000);
 
   static const PololuMenuItem items[] = {
-    { F("Standard"), selectStandard },
-    { F("Turtle"), selectTurtle },
-    { F("Hyper"), selectHyper },
+    { "Standard", selectStandard },
+    { "Turtle", selectTurtle },
+    { "Hyper", selectHyper },
   };
 
   menu.setItems(items, 3);
@@ -122,7 +122,7 @@ void selectEdition()
 // bar graphs.
 void loadCustomCharacters()
 {
-  static const char levels[] PROGMEM = {
+  static const char levels[] = {
     0, 0, 0, 0, 0, 0, 0, 63, 63, 63, 63, 63, 63, 63
   };
   display.loadCustomCharacter(levels + 0, 0);  // 1 bar
@@ -148,9 +148,9 @@ void calibrateSensors()
   // Wait 1 second and then begin automatic sensor calibration
   // by rotating in place to sweep the sensors over the line
   delay(1000);
-  for(uint16_t i = 0; i < 160; i++)
+  for(uint16_t i = 0; i < 80; i++)
   {
-    if (i > 40 && i <= 120)
+    if (i > 20 && i <= 60)
     {
       motors.setSpeeds(-(int16_t)calibrationSpeed, calibrationSpeed);
     }
@@ -210,9 +210,9 @@ void setup()
 
   // Wait for button B to be pressed and released.
   display.clear();
-  display.print(F("Press B"));
+  display.print("Press B");
   display.gotoXY(0, 1);
-  display.print(F("to calib"));
+  display.print("to calib");
   while(!buttonB.getSingleDebouncedPress());
 
   calibrateSensors();
@@ -221,7 +221,7 @@ void setup()
 
   // Play music and wait for it to finish before we start driving.
   display.clear();
-  display.print(F("Go!"));
+  display.print("Go!");
   buzzer.play("L16 cdegreg4");
   while(buzzer.isPlaying());
   display.clear();

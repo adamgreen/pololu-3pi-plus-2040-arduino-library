@@ -80,12 +80,11 @@ enum PlayMode
 
 class Buzzer
 {
-  public:
+  private:
 
-  // UNDONE Add docs for this constructor.
-  Buzzer() : pwm(p7)
-  {
-  }
+    static const uint32_t buzzerPin = 7;
+
+  public:
 
   /*! \brief Plays the specified frequency for the specified duration.
    *
@@ -325,7 +324,6 @@ class Buzzer
   char currentCharacter();
   unsigned int getNumber();
 
-  mbed::PwmOut  pwm;
   mbed::Timeout timeout;
 
   volatile bool buzzerFinished = true;  // flag: 0 while playing

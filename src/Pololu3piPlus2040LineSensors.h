@@ -222,7 +222,7 @@ public:
     LineSensorReadings minimum;
     /// Highest readings seen during calibration.
     LineSensorReadings maximum;
-    /// Has calibration been run to intialize this structure.
+    /// Has calibration been run to initialize this structure.
     bool initialized;
 
     CalibrationData()

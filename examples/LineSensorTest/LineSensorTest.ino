@@ -1,5 +1,5 @@
 // This example shows how to read the raw values from the five line sensors on
-// the 3pi+ 32U4.  This example is useful if you are having trouble with the
+// the 3pi+ 2040.  This example is useful if you are having trouble with the
 // sensors or just want to characterize their behavior.
 //
 // The raw (uncalibrated) values are reported to the serial monitor.  You can

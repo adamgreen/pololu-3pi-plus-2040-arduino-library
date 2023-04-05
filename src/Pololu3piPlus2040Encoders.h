@@ -32,7 +32,7 @@ public:
     /// due to a non-standard gearbox.
     ///
     /// \param flip If true, the direction of counting will be
-    /// reversed relative to the standard 3pi+ 32U4.
+    /// reversed relative to the standard 3pi+ 2040.
     static void flipEncoders(bool flip);
 
     /// \brief Initializes the encoders (called automatically).

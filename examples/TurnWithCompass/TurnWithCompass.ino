@@ -69,9 +69,9 @@ void selectHyper()
 
 void selectStandard()
 {
-  speedStraightLeft = 150;
+  speedStraightLeft = 100;
   speedStraightRight = speedStraightLeft;
-  turnBaseSpeed = 40;
+  turnBaseSpeed = 20;
   driveTime = 1000;
 }
 
@@ -88,15 +88,15 @@ PololuMenu menu;
 void selectEdition()
 {
   display.clear();
-  display.print(F("Select"));
+  display.print("Select");
   display.gotoXY(0,1);
-  display.print(F("edition"));
+  display.print("edition");
   delay(1000);
 
   static const PololuMenuItem items[] = {
-    { F("Standard"), selectStandard },
-    { F("Turtle"), selectTurtle },
-    { F("Hyper"), selectHyper },
+    { "Standard", selectStandard },
+    { "Turtle", selectTurtle },
+    { "Hyper", selectHyper },
   };
 
   menu.setItems(items, 3);

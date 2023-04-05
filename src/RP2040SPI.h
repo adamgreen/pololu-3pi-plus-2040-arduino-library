@@ -68,7 +68,6 @@ namespace Pololu3piPlus2040
                     return;
                 frequency(4000000);
                 // Switch sck pins from LED to Display.
-                // UNDONE: I think the setOutputLow() stuff can just be done once in constructor.
                 m_ledsSckPin.setOutputLow();
                 gpio_set_function(sckForLEDsPin, GPIO_FUNC_SIO);
                 gpio_set_function(sckForDisplayPin, GPIO_FUNC_SPI);
