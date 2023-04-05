@@ -14,8 +14,7 @@ The 3pi+ 2040 robot is a complete, high-performance mobile platform based on the
 
 ## Installing the library
 
-* You can download this GitHub repository by clicking the `Code` button towards the top of this very page and selecting the `Download ZIP` option.<br><br>
-![Copy button](pio/CopyButton.png)<br><br>
+* You can download this GitHub repository by clicking the `Code` button towards the top of this very page and then selecting the `Download ZIP` option from the resulting drop down.<br><br>
 ![Download ZIP](pio/DownloadZip.png)<br><br>
 * Once downloaded you can follow the [Importing a .zip Library](https://docs.arduino.cc/software/ide-v1/tutorials/installing-libraries#importing-a-zip-library) steps from the official Arduino documentation.
 
@@ -27,15 +26,16 @@ The 3pi+ 2040 robot is a complete, high-performance mobile platform based on the
 4. ~~Click "Install".~~
 5. ~~If you see a prompt asking to install missing dependencies, click "Install all".~~
 
-## Arduino & 3pi+ 2040
+## Arduino IDE for the 3pi+ 2040
 ![Arduino Mbed OS RP2040 Library](pio/ArduinoRP2040.png)
 
-The latest Arduino IDE already ships with a board package that is compatible with the 3pi+ 2040: **Arduino Mbed OS RP2040 Boards**. The circuit of the 3pi+ 2040 PCB is close enough to the Raspberry Pi Pico that it just worked:
+The latest Arduino IDE already ships with a board package that is compatible with the 3pi+ 2040: **Arduino Mbed OS RP2040 Boards**. The circuit of the 3pi+ 2040 PCB is close enough to the Raspberry Pi Pico that it just works:
 * The yellow LED on the 3pi+ 2040 is even connected to the same pin as the user LED on the Pico, **Pin 25**. This means that the stock **Blink** Arduino example just worked on the 3pi+ 2040 as well.
+* The Wire library expects the I2C signals to be on the same pins: **Pin 4** (SDA) and **Pin 5** (SCL).
 
 
-## Uploading Code from Arduino IDE to 3pi+ 2040
-The Arduino IDE was able to successfully upload new code to the 3pi+ 2040 over the same USB connection as used for MicroPython programming. There are 2 ways that the Arduino IDE can upload code to the RP2040 microcontroller using the USB cable:
+## Uploading from the Arduino IDE to the 3pi+ 2040
+The Arduino IDE is able to successfully upload new code to the 3pi+ 2040 over the same USB connection as used for MicroPython programming. There are 2 ways that the Arduino IDE can upload code to the RP2040 microcontroller using the USB cable:
 * Once you have Arduino code up and running on your RP2040, the IDE can use USB to make a serial connection to the device. This means that `Serial.print()` calls in your code will show up in Arduino's *Serial Monitor*. Arduino can use this same USB serial connection to place the RP2040 into bootloader mode automatically. The user just needs to select the **Sketch/Upload** option in the Arduino IDE and it will build and deploy the code to your 3pi+ 2040 robot with no manual intervention from you. The image below shows the 3pi+ 2040 robot showing up as a **Rasperry Pi Pico** on the **dev/cu.usbmodem1101** virtual serial port when connected to my Mac.
 ![Selecting 3pi+ 2040 in Arduino IDE](pio/Arduino3pi2040.png)
 * The previous automatic upload process doesn't always work though. If the Arduino USB serial driver isn't successfully running on your 3pi+ 2040 then you will need to place the RP2040 into bootloader mode manually before starting the upload process in Arduino.All you need to do is hold down the **B Button** while cycling the **Reset Button**. This will force the RP2040 into bootloader mode where it shows up on your PC as a **RPI-RP2** drive. Once this special drive shows up on your PC, you can just select the **Sketch/Upload** option in the Arduino IDE as usual. When is this slightly more manual process required?
