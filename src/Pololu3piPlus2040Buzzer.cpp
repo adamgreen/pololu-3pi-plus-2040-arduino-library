@@ -4,6 +4,7 @@
 #include <hardware/pwm.h>
 #include <hardware/clocks.h>
 #include "Pololu3piPlus2040Buzzer.h"
+#include "RP2040SIO.h"
 
 namespace Pololu3piPlus2040
 {
@@ -40,6 +41,10 @@ void Buzzer::playFrequency(unsigned int freq, unsigned int dur,
       intTop = 65536;
   }
 
+  // Configure buzzer pin to output a 0 value when the SIO function is selected between notes. This reduces
+  // noise from the buzzer and clicks upon microcontroller reset.
+  RP2040SIO::Pin<buzzerPin>::setOutputLow();
+
   // Initialize the PWM slice to the desired frequency.
   gpio_set_function(buzzerPin, GPIO_FUNC_PWM);
   uint32_t sliceNo = pwm_gpio_to_slice_num(buzzerPin);
@@ -62,7 +67,8 @@ void Buzzer::playFrequency(unsigned int freq, unsigned int dur,
 void Buzzer::timerDone()
 {
     buzzerFinished = true;
-    pwm_set_enabled(pwm_gpio_to_slice_num(buzzerPin), false);
+    gpio_set_function(buzzerPin, GPIO_FUNC_SIO);
+    pwm_set_wrap(pwm_gpio_to_slice_num(buzzerPin), 0);
     if (buzzerSequence && (play_mode_setting == PLAY_AUTOMATIC))
       nextNote();
 }
@@ -256,7 +262,8 @@ void Buzzer::play(const char *notes)
 // stop all sound playback immediately
 void Buzzer::stopPlaying()
 {
-  pwm_set_enabled(pwm_gpio_to_slice_num(buzzerPin), false);
+  gpio_set_function(buzzerPin, GPIO_FUNC_SIO);
+  pwm_set_wrap(pwm_gpio_to_slice_num(buzzerPin), 0);
   timeout.detach();
 
   buzzerFinished = true;
