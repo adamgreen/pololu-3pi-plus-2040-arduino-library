@@ -144,6 +144,13 @@ namespace Pololu3piPlus2040
                 autoShow();
             }
 
+            uint8_t getBrightness(size_t led)
+            {
+                assert ( led < ledCount );
+
+                return m_data[(led+1)*4] & 0x1F;
+            }
+
             void set(size_t led, const RGB& rgb)
             {
                 assert ( led < ledCount );
@@ -163,6 +170,13 @@ namespace Pololu3piPlus2040
                 autoShow();
             }
 
+            RGB get(size_t led)
+            {
+                assert ( led < ledCount );
+
+                return RGB(m_data[4 + led*4 + 3], m_data[4 + led*4 + 2], m_data[4 + led*4 + 1]);
+            }
+
             void set(size_t led, const HSV& hsv, uint32_t hScale=360)
             {
                 assert ( led < ledCount );
@@ -171,22 +185,22 @@ namespace Pololu3piPlus2040
                 set(led, rgb);
             }
 
-            RGB hsv2rgb(uint8_t h, uint8_t s, uint8_t v, uint32_t hScale=360)
+            RGB hsv2rgb(uint8_t h, uint8_t s, uint8_t v)
             {
                 // Adapted from https://stackoverflow.com/a/14733008
-                // but with variable hue scale.
-                uint32_t sixth = (hScale + 3) / 6;
                 if (s == 0)
                 {
                     return RGB(v, v, v);
                 }
 
-                h = h % hScale;
-                uint8_t region = h / sixth;
-                uint8_t remainder = (h - (region * sixth)) * 6;
-                uint8_t p = (v * (255 - s));
-                uint8_t q = (v * (255 - ((s * remainder) / hScale)));
-                uint8_t t = (v * (255 - ((s * (hScale - remainder)) / hScale)));
+                uint32_t h32 = h;
+                uint32_t s32 = s;
+                uint32_t v32 = v;
+                uint32_t region = h / 43;
+                uint32_t remainder = (h - (region * 43)) * 6;
+                uint8_t p = (v32 * (255 - s32)) >> 8;
+                uint8_t q = (v32 * (255 - ((s32 * remainder) >> 8))) >> 8;
+                uint8_t t = (v32 * (255 - ((s32 * (255 - remainder)) >> 8))) >> 8;
 
                 switch (region)
                 {
