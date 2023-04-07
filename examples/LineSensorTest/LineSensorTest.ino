@@ -10,7 +10,6 @@
 
 ButtonC buttonC;
 LineSensors lineSensors;
-LineSensorReadings sensorValues;
 
 bool useEmitters = true;
 
@@ -25,11 +24,11 @@ void printReadingsToSerial()
 {
   char buffer[80];
   sprintf(buffer, "%4d %4d %4d %4d %4d %c\n",
-    sensorValues.vals[0],
-    sensorValues.vals[1],
-    sensorValues.vals[2],
-    sensorValues.vals[3],
-    sensorValues.vals[4],
+    lineSensors.rawSensorValues[0],
+    lineSensors.rawSensorValues[1],
+    lineSensors.rawSensorValues[2],
+    lineSensors.rawSensorValues[3],
+    lineSensors.rawSensorValues[4],
     useEmitters ? 'E' : 'e'
   );
   Serial.print(buffer);
@@ -44,7 +43,7 @@ void loop()
     lastSampleTime = millis();
 
     // Read the line sensors.
-    lineSensors.read(sensorValues, useEmitters ? LineSensorsReadMode::On : LineSensorsReadMode::Off);
+    lineSensors.read(useEmitters ? LineSensorsReadMode::On : LineSensorsReadMode::Off);
 
     // Send the results to the LCD and to the serial monitor.
     printReadingsToSerial();

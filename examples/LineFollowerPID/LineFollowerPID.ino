@@ -19,8 +19,6 @@ ButtonC buttonC;
 
 int16_t lastError = 0;
 
-LineSensorReadings lineSensorValues;
-
 /* Configuration for specific 3pi+ editions: the Standard, Turtle, and
 Hyper versions of 3pi+ have different motor configurations, requiring
 the demo to be configured with different parameters for proper
@@ -164,7 +162,7 @@ void calibrateSensors()
   motors.setSpeeds(0, 0);
 }
 
-void showReading(uint16_t position, LineSensorReadings& sensorValues)
+void showReading(uint16_t position)
 {
   display.gotoXY(0, 0);
   display.print(position);
@@ -172,7 +170,7 @@ void showReading(uint16_t position, LineSensorReadings& sensorValues)
   display.gotoXY(0, 1);
   for (uint8_t i = 0; i < LINE_SENSOR_COUNT; i++)
   {
-    uint8_t barHeight = map(sensorValues.vals[i], 0, 1000, 0, 8);
+    uint8_t barHeight = map(lineSensors.calibratedSensorValues[i], 0, 1000, 0, 8);
     printBar(barHeight);
   }
 }
@@ -185,9 +183,9 @@ void showReadings()
 
   while(!buttonB.getSingleDebouncedPress())
   {
-    uint16_t position = lineSensors.readLineBlack(lineSensorValues);
+    uint16_t position = lineSensors.readLineBlack();
 
-    showReading(position, lineSensorValues);
+    showReading(position);
 
     delay(50);
   }
@@ -229,12 +227,9 @@ void setup()
 
 void loop()
 {
-  // Get the position of the line.  Note that we *must* provide
-  // the "lineSensorValues" argument to readLineBlack() here, even
-  // though we are not interested in the individual sensor
-  // readings.
-  int16_t position = lineSensors.readLineBlack(lineSensorValues);
-  showReading(position, lineSensorValues);
+  // Get the position of the line.
+  int16_t position = lineSensors.readLineBlack();
+  showReading(position);
 
   // Our "error" is how far we are away from the center of the
   // line, which corresponds to position 2000.

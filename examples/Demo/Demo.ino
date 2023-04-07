@@ -429,18 +429,16 @@ void lineSensorDemo()
   display.gotoXY(6, 1);
   display.print('C');
 
-  LineSensorReadings lineSensorValues;
-
   while (mainMenu.buttonMonitor() != 'B')
   {
     bool emittersOff = buttonC.isPressed();
 
-    lineSensors.read(lineSensorValues, emittersOff ? LineSensorsReadMode::Off :  LineSensorsReadMode::On);
+    lineSensors.read(emittersOff ? LineSensorsReadMode::Off :  LineSensorsReadMode::On);
 
     display.gotoXY(1, 0);
     for (uint8_t i = 0; i < 5; i++)
     {
-      uint8_t barHeight = map(lineSensorValues.vals[i], 0, 1024, 0, 8);
+      uint8_t barHeight = map(lineSensors.rawSensorValues[i], 0, 1024, 0, 8);
       printBar(barHeight);
     }
 
