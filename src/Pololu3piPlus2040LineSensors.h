@@ -88,34 +88,6 @@ public:
   /// \brief Resets all calibration that has been done.
   void resetCalibration();
 
-  /// \brief Reads the raw sensor values into an array.
-  /// This function is deprecated. You should use the version without the
-  /// sensorValues parameter instead.
-  ///
-  /// \param[out] sensorValues A pointer to an array in which to store the
-  /// raw sensor readings. There **MUST** be space in the array for five
-  /// readings.
-  ///
-  /// \param mode The emitter behavior during the read, as a member of the
-  /// ::LineSensorsReadMode enum. The default is LineSensorsReadMode::On.
-  ///
-  /// Example usage:
-  /// ~~~{.cpp}
-  /// uint16_t sensorValues[5];
-  /// lineSensors.read(sensorValues);
-  /// ~~~
-  ///
-  /// The values returned are a measure of the reflectance in abstract units,
-  /// with higher values corresponding to lower reflectance (e.g. a black
-  /// surface or a void).
-  ///
-  /// Analog sensors will return a raw value between 0 and 1024 (like
-  /// Arduino's `analogRead()` function).
-  void read(LineSensorReadings& sensorValues, LineSensorsReadMode mode = LineSensorsReadMode::On)
-  {
-    readPrivate(&sensorValues, mode);
-  }
-
   /// \brief Reads the raw sensor values into the rawSensorValues member.
   ///
   /// \param mode The emitter behavior during the read, as a member of the
@@ -135,35 +107,7 @@ public:
   /// Arduino's `analogRead()` function).
   void read(LineSensorsReadMode mode = LineSensorsReadMode::On)
   {
-    readPrivate(NULL, mode);
-  }
-
-
-  /// \brief Reads the sensors and provides calibrated values between 0 and
-  /// 1000.
-  /// This function is deprecated. You should use the version without the
-  /// sensorValues parameter instead.
-  ///
-  /// \param[out] sensorValues A pointer to an array in which to store the
-  /// calibrated sensor readings.  There **MUST** be space in the array for
-  /// all five values.
-  ///
-  /// \param mode The emitter behavior during the read, as a member of the
-  /// ::LineSensorsReadMode enum. The default is LineSensorsReadMode::On. Manual
-  /// emitter control with LineSensorsReadMode::Manual is not supported.
-  ///
-  /// 0 corresponds to the minimum value stored in #calibrationOn or
-  /// #calibrationOff, depending on \p mode, and 1000 corresponds to the
-  /// maximum value. Calibration values are typically obtained by calling
-  /// calibrate(), and they are stored separately for each sensor, so that
-  /// differences in the sensors are accounted for automatically.
-  ///
-  /// \if usage
-  ///   See \ref md_usage for more information and example code.
-  /// \endif
-  void readCalibrated(LineSensorReadings& sensorValues, LineSensorsReadMode mode = LineSensorsReadMode::On)
-  {
-    readCalibratedPrivate(&sensorValues, mode);
+    readPrivate(mode);
   }
 
   /// \brief Reads the sensors and provides calibrated values between 0 and
@@ -180,26 +124,7 @@ public:
   /// differences in the sensors are accounted for automatically.
   void readCalibrated(LineSensorsReadMode mode = LineSensorsReadMode::On)
   {
-    readCalibratedPrivate(NULL, mode);
-  }
-
-  /// \brief Reads the sensors, provides calibrated values, and returns an
-  /// estimated black line position.
-  /// This function is deprecated. You should use the version without the
-  /// sensorValues parameter instead.
-  ///
-  /// \param[out] sensorValues A pointer to an array in which to store the
-  /// calibrated sensor readings.  There **MUST** be space in the array for
-  /// five values.
-  ///
-  /// \param mode The emitter behavior during the read, as a member of the
-  /// ::LineSensorsReadMode enum. The default is LineSensorsReadMode::On. Manual
-  /// emitter control with LineSensorsReadMode::Manual is not supported.
-  ///
-  /// \return An estimate of the position of a black line under the sensors.
-  uint16_t readLineBlack(LineSensorReadings& sensorValues, LineSensorsReadMode mode = LineSensorsReadMode::On)
-  {
-    return readLinePrivate(&sensorValues, mode, false);
+    readCalibratedPrivate(mode);
   }
 
   /// \brief Reads the sensors, provides calibrated values, and returns an
@@ -239,26 +164,7 @@ public:
   /// readLineWhite().
   uint16_t readLineBlack(LineSensorsReadMode mode = LineSensorsReadMode::On)
   {
-    return readLinePrivate(NULL, mode, false);
-  }
-
-  /// \brief Reads the sensors, provides calibrated values, and returns an
-  /// estimated white line position.
-  /// This function is deprecated. You should use the version without the
-  /// sensorValues parameter instead.
-  ///
-  /// \param[out] sensorValues A pointer to an array in which to store the
-  /// calibrated sensor readings.  There **MUST** be space in the array for
-  /// five values.
-  ///
-  /// \param mode The emitter behavior during the read, as a member of the
-  /// ::LineSensorsReadMode enum. The default is LineSensorsReadMode::On. Manual
-  /// emitter control with LineSensorsReadMode::Manual is not supported.
-  ///
-  /// \return An estimate of the position of a white line under the sensors.
-  uint16_t readLineWhite(LineSensorReadings& sensorValues, LineSensorsReadMode mode = LineSensorsReadMode::On)
-  {
-    return readLinePrivate(&sensorValues, mode, true);
+    return readLinePrivate(mode, false);
   }
 
   /// \brief Reads the sensors, provides calibrated values, and returns an
@@ -275,7 +181,7 @@ public:
   /// readLineBlack().
   uint16_t readLineWhite(LineSensorsReadMode mode = LineSensorsReadMode::On)
   {
-    return readLinePrivate(NULL, mode, true);
+    return readLinePrivate(mode, true);
   }
 
 
@@ -352,13 +258,13 @@ private:
   // initializing the storage for the calibration values if necessary.
   void calibrateOnOrOff(CalibrationData & calibration, LineSensorsReadMode mode);
 
-  void readPrivate(LineSensorReadings* pSensorValues, LineSensorsReadMode mode);
-  void readPrivate(LineSensorReadings* pSensorValues);
+  void readPrivate(LineSensorsReadMode mode);
+  void readPrivate();
 
-  void readCalibratedPrivate(LineSensorReadings* pSensorValues, LineSensorsReadMode mode);
-  void readCalibratedPrivate(CalibrationData& calibration, LineSensorReadings* pSensorValues, LineSensorsReadMode mode);
+  void readCalibratedPrivate(LineSensorsReadMode mode);
+  void readCalibratedPrivate(CalibrationData& calibration, LineSensorsReadMode mode);
 
-  uint16_t readLinePrivate(LineSensorReadings* pSensorValues, LineSensorsReadMode mode, bool invertReadings);
+  uint16_t readLinePrivate(LineSensorsReadMode mode, bool invertReadings);
 
   /// Pointer to the QTR sensor reading singleton shared with the bumper sensors.
   QTRSensors* pQTR;
