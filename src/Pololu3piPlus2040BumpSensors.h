@@ -11,6 +11,15 @@
 namespace Pololu3piPlus2040
 {
 
+/// Bump sensor sides.
+enum BumpSide {
+  /// Right bump sensor
+  BumpRight = 0,
+
+  /// Left bump sensor
+  BumpLeft  = 1
+};
+
 /// \brief Gets readings from the two bump sensors on the front of the 3pi+
 /// 2040.
 class BumpSensors
@@ -111,14 +120,6 @@ class BumpSensors
     BumperSensorReadings sensorValues;
 
   private:
-    /// Bump sensor sides.
-    enum BumpSide {
-    /// Right bump sensor
-    BumpRight = 0,
-
-    /// Left bump sensor
-    BumpLeft  = 1
-    };
     /// Current bumper pressed state. Used together with last[] to determine state
     /// changes.
     uint8_t pressed[2];
