@@ -71,45 +71,21 @@ void LineSensors::calibrateOnOrOff(CalibrationData & calibration, LineSensorsRea
   calibration.initialized = true;
 }
 
-void LineSensors::read(LineSensorReadings& sensorValues, LineSensorsReadMode mode)
-{
-  switch (mode)
-  {
-    case LineSensorsReadMode::Off:
-      emittersOff();
-      readPrivate(sensorValues);
-      return;
-
-    case LineSensorsReadMode::Manual:
-      readPrivate(sensorValues);
-      return;
-
-    case LineSensorsReadMode::On:
-      emittersOn();
-      readPrivate(sensorValues);
-      emittersOff();
-      return;
-
-    default: // invalid - do nothing
-      return;
-  }
-}
-
-void LineSensors::readCalibrated(LineSensorReadings& sensorValues, LineSensorsReadMode mode)
+void LineSensors::readCalibratedPrivate(LineSensorReadings* pSensorValues, LineSensorsReadMode mode)
 {
   switch (mode)
   {
     case LineSensorsReadMode::On:
-        return readCalibratedPrivate(calibrationOn, sensorValues, mode);
+        return readCalibratedPrivate(calibrationOn, pSensorValues, mode);
     case LineSensorsReadMode::Off:
-        return readCalibratedPrivate(calibrationOff, sensorValues, mode);
+        return readCalibratedPrivate(calibrationOff, pSensorValues, mode);
     default:
         // manual emitter control is not supported
         return;
   }
 }
 
-void LineSensors::readCalibratedPrivate(CalibrationData& calibration, LineSensorReadings& sensorValues, LineSensorsReadMode mode)
+void LineSensors::readCalibratedPrivate(CalibrationData& calibration, LineSensorReadings* pSensorValues, LineSensorsReadMode mode)
 {
   // if not calibrated, do nothing
   if (!calibration.initialized)
@@ -118,7 +94,7 @@ void LineSensors::readCalibratedPrivate(CalibrationData& calibration, LineSensor
   }
 
   // read the needed values
-  read(sensorValues, mode);
+  readPrivate(NULL, mode);
 
   for (uint8_t i = 0; i < _sensorCount; i++)
   {
@@ -129,7 +105,7 @@ void LineSensors::readCalibratedPrivate(CalibrationData& calibration, LineSensor
 
     if (denominator != 0)
     {
-      value = (((int32_t)sensorValues.vals[i]) - calmin) * 1000 / denominator;
+      value = (((int32_t)rawSensorValues[i]) - calmin) * 1000 / denominator;
     }
 
     if (value < 0)
@@ -141,11 +117,16 @@ void LineSensors::readCalibratedPrivate(CalibrationData& calibration, LineSensor
       value = 1000;
     }
 
-    sensorValues.vals[i] = value;
+    calibratedSensorValues[i] = value;
+  }
+
+  if (pSensorValues != NULL)
+  {
+    memcpy(&pSensorValues->vals[0], &calibratedSensorValues[0], sizeof(pSensorValues->vals[0])*_sensorCount);
   }
 }
 
-uint16_t LineSensors::readLinePrivate(LineSensorReadings& sensorValues, LineSensorsReadMode mode,
+uint16_t LineSensors::readLinePrivate(LineSensorReadings* pSensorValues, LineSensorsReadMode mode,
                          bool invertReadings)
 {
   bool onLine = false;
@@ -155,11 +136,11 @@ uint16_t LineSensors::readLinePrivate(LineSensorReadings& sensorValues, LineSens
   // manual emitter control is not supported
   if (mode == LineSensorsReadMode::Manual) { return 0; }
 
-  readCalibrated(sensorValues, mode);
+  readCalibratedPrivate(pSensorValues, mode);
 
   for (uint8_t i = 0; i < _sensorCount; i++)
   {
-    uint16_t value = sensorValues.vals[i];
+    uint16_t value = calibratedSensorValues[i];
     if (invertReadings) { value = 1000 - value; }
 
     // keep track of whether we see the line at all
@@ -191,14 +172,46 @@ uint16_t LineSensors::readLinePrivate(LineSensorReadings& sensorValues, LineSens
   return _lastPosition;
 }
 
-void LineSensors::readPrivate(LineSensorReadings& sensorValues)
+void LineSensors::readPrivate(LineSensorReadings* pSensorValues, LineSensorsReadMode mode)
+{
+  switch (mode)
+  {
+    case LineSensorsReadMode::Off:
+      emittersOff();
+      readPrivate(pSensorValues);
+      return;
+
+    case LineSensorsReadMode::Manual:
+      readPrivate(pSensorValues);
+      return;
+
+    case LineSensorsReadMode::On:
+      emittersOn();
+      readPrivate(pSensorValues);
+      emittersOff();
+      return;
+
+    default: // invalid - do nothing
+      return;
+  }
+}
+
+void LineSensors::readPrivate(LineSensorReadings* pSensorValues)
 {
   QTRSensorReadings readings = pQTR->read();
-  sensorValues = readings.lineReadings;
 
-  // Swap sensor reading order to match 32U4 version of the robot.
-  swapUINT16(&sensorValues.vals[0], &sensorValues.vals[4]);
-  swapUINT16(&sensorValues.vals[1], &sensorValues.vals[3]);
+  // Reverse sensor reading order to match 32U4 version of the robot as it is copied into rawSensorValues array.
+  rawSensorValues[0] = readings.lineReadings.vals[4];
+  rawSensorValues[1] = readings.lineReadings.vals[3];
+  rawSensorValues[2] = readings.lineReadings.vals[2];
+  rawSensorValues[3] = readings.lineReadings.vals[1];
+  rawSensorValues[4] = readings.lineReadings.vals[0];
+
+  // If user wants the raw line readings returned in their call then copy it into their output array as well.
+  if (pSensorValues != NULL)
+  {
+    memcpy(&pSensorValues->vals[0], &rawSensorValues[0], sizeof(pSensorValues->vals[0])*_sensorCount);
+  }
 }
 
 }
