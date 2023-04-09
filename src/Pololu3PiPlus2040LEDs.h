@@ -24,29 +24,6 @@
 
 namespace Pololu3piPlus2040
 {
-    class YellowLED
-    {
-        public:
-            void set(bool on)
-            {
-                m_yellowPin.setOutput(!on);
-            }
-
-        protected:
-            RP2040SIO::Pin<25> m_yellowPin;
-    };
-
-    extern YellowLED yellowLED;
-
-    /// \brief Turns the yellow user LED on pin 25 on or off.
-    ///
-    /// \param on A value of 1 turns on the LED; 0 turns it off.
-    inline void ledYellow(bool on)
-    {
-        yellowLED.set(on);
-    }
-
-
 
     // Structure used to contain the RGB or HSV colour values for each LED.
     struct RGB

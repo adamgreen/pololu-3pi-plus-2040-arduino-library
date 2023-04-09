@@ -1,0 +1,129 @@
+Only in pololu-3pi-2040-robot/c/pololu_3pi_2040_robot: CMakeLists.txt
+diff -u -x LICENSE* -x *.h pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/battery.c ../src/pololu-3pi-2040-robot/battery.c
+--- pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/battery.c	2023-04-08 22:03:07
++++ ../src/pololu-3pi-2040-robot/battery.c	2023-04-08 22:47:34
+@@ -1,5 +1,5 @@
+-#include <pololu_3pi_2040_robot.h>
+-#include <pico/stdlib.h>
++#include "pololu_3pi_2040_robot.h"
++//#include <pico/stdlib.h>
+ #include <hardware/adc.h>
+ 
+ uint16_t battery_get_level_millivolts()
+diff -u -x LICENSE* -x *.h pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/button.c ../src/pololu-3pi-2040-robot/button.c
+--- pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/button.c	2023-04-08 22:03:07
++++ ../src/pololu-3pi-2040-robot/button.c	2023-04-08 22:47:34
+@@ -1,9 +1,12 @@
+ // Copyright (C) Pololu Corporation.  See LICENSE.txt for details.
+ 
+-#include <button.h>
+-#include <pico/stdlib.h>
++#include "button.h"
++//#include <pico/stdlib.h>
++#include <hardware/gpio.h>
++#define gpio_init _gpio_init
+ #include <hardware/structs/ioqspi.h>
+ #include <hardware/sync.h>
++#include <pico/time.h>
+ 
+ // Temporarily changes pin 25 to be an input in order to read button A.
+ bool button_a_is_pressed()
+diff -u -x LICENSE* -x *.h pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/display.c ../src/pololu-3pi-2040-robot/display.c
+--- pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/display.c	2023-04-08 22:03:07
++++ ../src/pololu-3pi-2040-robot/display.c	2023-04-08 22:47:34
+@@ -1,9 +1,9 @@
+ // Copyright (C) Pololu Corporation.  See LICENSE.txt for details.
+ 
+-#include <display.h>
++#include "display.h"
+ #include <string.h>
+ #include <assert.h>
+-#include <sh1106.h>
++#include "sh1106.h"
+ 
+ static inline unsigned int to_unsigned(int x) { return x < 0 ? 0 : x; }
+ 
+Only in pololu-3pi-2040-robot/c/pololu_3pi_2040_robot: include
+diff -u -x LICENSE* -x *.h pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/ir_sensors.c ../src/pololu-3pi-2040-robot/ir_sensors.c
+--- pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/ir_sensors.c	2023-04-08 22:03:07
++++ ../src/pololu-3pi-2040-robot/ir_sensors.c	2023-04-08 22:47:34
+@@ -1,11 +1,14 @@
+ // Copyright (C) Pololu Corporation.  See LICENSE.txt for details.
+ 
+-#include <ir_sensors.h>
++#include "ir_sensors.h"
+ #include <string.h>
+-#include <pico/stdlib.h>
++//#include <pico/stdlib.h>
++#define gpio_init _gpio_init
++#include <hardware/gpio.h>
+ #include <hardware/pio.h>
++#include <pico/time.h>
+ 
+-#include <qtr_sensor_counter.pio.h>
++#include "qtr_sensor_counter.pio.h"
+ 
+ #define IR_PIO pio1
+ #define IR_FUNC GPIO_FUNC_PIO1
+diff -u -x LICENSE* -x *.h pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/motors.c ../src/pololu-3pi-2040-robot/motors.c
+--- pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/motors.c	2023-04-08 22:03:07
++++ ../src/pololu-3pi-2040-robot/motors.c	2023-04-08 22:47:34
+@@ -1,7 +1,8 @@
+ // Copyright (C) Pololu Corporation.  See LICENSE.txt for details.
+ 
+-#include <motors.h>
++#include "motors.h"
+ #include <hardware/gpio.h>
++#define gpio_init _gpio_init
+ #include <hardware/pwm.h>
+ 
+ static bool flip_left_motor = false;
+diff -u -x LICENSE* -x *.h pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/rgb_leds.c ../src/pololu-3pi-2040-robot/rgb_leds.c
+--- pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/rgb_leds.c	2023-04-08 22:03:07
++++ ../src/pololu-3pi-2040-robot/rgb_leds.c	2023-04-08 22:47:34
+@@ -1,8 +1,11 @@
+ // Copyright (C) Pololu Corporation.  See LICENSE.txt for details.
+ 
+-#include <rgb_leds.h>
+-#include <pico/stdlib.h>
++#include "rgb_leds.h"
++//#include <pico/stdlib.h>
++#include <hardware/gpio.h>
++#define gpio_init _gpio_init
+ #include <hardware/spi.h>
++#define spi_init _spi_init
+ 
+ #define RGB_DATA_PIN 3
+ #define RGB_CLOCK_PIN 6
+diff -u -x LICENSE* -x *.h pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/sh1106.c ../src/pololu-3pi-2040-robot/sh1106.c
+--- pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/sh1106.c	2023-04-08 22:03:07
++++ ../src/pololu-3pi-2040-robot/sh1106.c	2023-04-08 22:47:34
+@@ -2,8 +2,11 @@
+ 
+ // Low-level library for the SH1106 OLED display.
+ 
+-#include <sh1106.h>
+-#include <pico/stdlib.h>
++#include "sh1106.h"
++//#include <pico/stdlib.h>
++#include <hardware/gpio.h>
++#define gpio_init _gpio_init
++#define spi_init _spi_init
+ #include <hardware/spi.h>
+ 
+ #define SH1106_DC_PIN 0
+diff -u -x LICENSE* -x *.h pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/yellow_led.c ../src/pololu-3pi-2040-robot/yellow_led.c
+--- pololu-3pi-2040-robot/c/pololu_3pi_2040_robot/yellow_led.c	2023-04-08 22:03:07
++++ ../src/pololu-3pi-2040-robot/yellow_led.c	2023-04-08 22:47:34
+@@ -1,7 +1,9 @@
+ // Copyright (C) Pololu Corporation.  See LICENSE.txt for details.
+ 
+-#include <pololu_3pi_2040_robot.h>
+-#include <pico/stdlib.h>
++#include "pololu_3pi_2040_robot.h"
++//#include <pico/stdlib.h>
++#include <hardware/gpio.h>
++#define gpio_init _gpio_init
+ 
+ void yellow_led(bool b)
+ {

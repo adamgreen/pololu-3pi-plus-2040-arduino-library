@@ -27,6 +27,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 
 
+******************************************************************
+* This library code also makes use of Pololu's C Library for the *
+* 3pi+ 2040 robot. The licenses for that code can be found in    *
+* the src/pololu-3pi-2040-robot/ folder.                         *
+******************************************************************
+
+
+
 *****************************************************************
 * Some of the code in this library was created new by myself,   *
 * Adam Green, and is covered by the Apache License Version 2.0: *

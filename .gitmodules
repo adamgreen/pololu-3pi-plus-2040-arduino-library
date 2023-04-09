@@ -1,3 +1,6 @@
 [submodule "pio/pico-sdk"]
 	path = pio/pico-sdk
 	url = git@github.com:raspberrypi/pico-sdk.git
+[submodule "pio/pololu-3pi-2040-robot"]
+	path = pio/pololu-3pi-2040-robot
+	url = git@github.com:pololu/pololu-3pi-2040-robot.git

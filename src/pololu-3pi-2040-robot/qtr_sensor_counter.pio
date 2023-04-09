@@ -1,0 +1,30 @@
+; Copyright (C) Pololu Corporation.  See LICENSE.txt for details.
+.program qtr_sensor_counter
+  out pindirs, 7     ; set pins to inputs (OSR is 0)
+
+  ; Loop iterations take exactly 8 cycles.
+loop:
+  in pins, 7         ; read pin values into ISR
+
+  mov osr, y         ; save y counter in OSR
+
+  mov y, isr         ; put new pin values in y
+  jmp x!=y change    ; compare old pin values (x) to new pin values (y)
+
+  mov isr, null      ; discard the pin values and reset shift counter
+  jmp decrement
+
+change:
+  mov x, y           ; save new pin values in x
+  in osr, 16         ; send the time and pin values to the CPU (autopush)
+
+decrement:
+  mov y, osr         ; restore y counter
+  jmp y-- loop
+
+finish:
+  in y, 32           ; Send 0xFFFFFFFF to tell the CPU we are done.
+
+.wrap_target
+  nop
+.wrap

@@ -5,7 +5,6 @@
 #pragma once
 
 #include <stdint.h>
-#include "RP2040SIO.h"
 
 namespace Pololu3piPlus2040
 {
@@ -24,7 +23,10 @@ class Motors
     /// direction pin being high.  If false, then positive motor speeds will
     /// correspond to the direction pin being low.
     ///
-    static void flipLeftMotor(bool flip);
+    static inline void flipLeftMotor(bool flip)
+    {
+        motors_flip_left(flip);
+    }
 
     /// \brief Flips the direction of the right motor.
     ///
@@ -35,21 +37,32 @@ class Motors
     /// \param flip If true, then positive motor speeds will correspond to the
     /// direction pin being high.  If false, then positive motor speeds will
     /// correspond to the direction pin being low.
-    static void flipRightMotor(bool flip);
+    static inline void flipRightMotor(bool flip)
+    {
+        motors_flip_right(flip);
+    }
 
     /// \brief Sets the speed for the left motor.
     ///
     /// \param speed A number from -400 to 400 representing the speed and
     /// direction of the left motor.  Values of -400 or less result in full
     /// speed reverse, and values of 400 or more result in full speed forward.
-    static void setLeftSpeed(int16_t speed);
+    static inline void setLeftSpeed(int16_t speed)
+    {
+        init();
+        motors_set_left_speed(mapSpeed(speed));
+    }
 
     /// \brief Sets the speed for the right motor.
     ///
     /// \param speed A number from -400 to 400 representing the speed and
     /// direction of the right motor. Values of -400 or less result in full
     /// speed reverse, and values of 400 or more result in full speed forward.
-    static void setRightSpeed(int16_t speed);
+    static inline void setRightSpeed(int16_t speed)
+    {
+        init();
+        motors_set_right_speed(mapSpeed(speed));
+    }
 
     /// \brief Sets the speeds for both motors.
     ///
@@ -59,9 +72,20 @@ class Motors
     /// \param rightSpeed A number from -400 to 400 representing the speed and
     /// direction of the right motor. Values of -400 or less result in full
     /// speed reverse, and values of 400 or more result in full speed forward.
-    static void setSpeeds(int16_t leftSpeed, int16_t rightSpeed);
+    static inline void setSpeeds(int16_t leftSpeed, int16_t rightSpeed)
+    {
+        init();
+        motors_set_speeds(mapSpeed(leftSpeed), mapSpeed(rightSpeed));
+    }
 
   private:
+
+    // Maps the existing Arduino library speed limits of -400 and 400 to the C
+    // SDK limits of -6000 and 6000.
+    static inline int32_t mapSpeed(int16_t speed)
+    {
+      return (int32_t)map(speed, -400, 400, -6000, 6000);
+    }
 
     static inline void init()
     {
@@ -70,11 +94,9 @@ class Motors
         if (!initialized)
         {
             initialized = true;
-            init2();
+            motors_init();
         }
     }
-
-    static void init2();
 };
 
 }

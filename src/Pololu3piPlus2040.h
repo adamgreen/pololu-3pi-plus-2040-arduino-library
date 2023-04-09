@@ -12,6 +12,12 @@
 #error "This library only supports the RP2040.  Try selecting Raspberry Pi Pico in the Boards menu."
 #endif
 
+// Pull in Pololu's C SDK for the 3pi+ 2040 robot.
+extern "C"
+{
+  #include "pololu-3pi-2040-robot/pololu_3pi_2040_robot.h"
+}
+
 #include "Pololu3piPlus2040BumpSensors.h"
 #include "Pololu3piPlus2040Buttons.h"
 #include "Pololu3piPlus2040Buzzer.h"
@@ -22,27 +28,22 @@
 #include "Pololu3piPlus2040Motors.h"
 #include "Pololu3piPlus2040OLED.h"
 
-
 /// Top-level namespace for the Pololu3piPlus2040 library.
 namespace Pololu3piPlus2040
 {
 
-/// Reads the battery voltage and returns it in millivolts.
-uint16_t readBatteryMillivolts()
+/// \brief Turns the yellow user LED on pin 25 on or off.
+///
+/// \param on A value of 1 turns on the LED; 0 turns it off.
+static inline void ledYellow(bool on)
 {
-    // Pin 26 is shared with the down emitter. The code in the LineSensors class will reconfigure to SIO mode
-    // every time it is used to enable or disable the emitter.
-    const uint32_t batteryVoltagePin = 26;
-    const uint32_t sampleCount = 10;
-    uint32_t sum = 0;
-    for (uint32_t i = 0; i < sampleCount; i++)
-    {
-        sum += analogRead(batteryVoltagePin);
-    }
+  yellow_led(on);
+}
 
-    // The voltage divider steps the voltage down by 1/11th of the actual battery voltage.
-    // The analogRead readings fall in a 10-bit range.
-    return (3300 * sum * 11 + sampleCount * 511) / (sampleCount * 1023);
+/// \brief Reads the battery voltage and returns it in millivolts.
+static inline uint16_t readBatteryMillivolts()
+{
+  return battery_get_level_millivolts();
 }
 
 }
