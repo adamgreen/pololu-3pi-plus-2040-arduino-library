@@ -32,8 +32,11 @@ class BumpSensors
     {
         pQTR = QTRSensors::getSharedQTR();
 
-        memset(&pressed, 0, sizeof(pressed));
-        memset(&last, 0, sizeof(last));
+        memset(&baseline, 0, sizeof(baseline));
+        memset(&threshold, 0, sizeof(threshold));
+        memset(&sensorValues, 0, sizeof(sensorValues));
+        memset(pressed, 0, sizeof(pressed));
+        memset(last, 0, sizeof(last));
     }
 
     /// \brief Calibrates the bump sensors.
@@ -61,7 +64,7 @@ class BumpSensors
     /// \return A bit field indicating whether each bump sensor is pressed. The
     /// bits representing each sensor are defined by the ::BumpSide enum.
     ///
-    /// For example, a return value of 2 (0b10 in binary) indicates:
+    /// For example, a return value of 1 (0b01 in binary) indicates:
     /// * The right bump sensor is pressed, since bit 0 (BumpRight) is set.
     /// * The left bump sensor is not pressed, since bit 1 (BumpLeft) is
     ///   cleared.

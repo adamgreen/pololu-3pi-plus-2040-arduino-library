@@ -94,11 +94,12 @@ This library also references several other Arduino libraries which are used to h
 * [Pushbutton](https://github.com/pololu/pushbutton-arduino)
 
 ## Version history
-* 0.1.2 (2023-4-6): Third alpha release from community with a few updates:
+* 0.1.2 (2023-4-8): Third alpha release from community with a few updates:
   * Moved Pololu3piPlus2040::BumpSensors::BumpSide up in namespace to Pololu3piPlus2040::BumpSide.
   * Simplify LineSensors API to remove sensorValues out parameter.
   * Added RGBLEDs::get() and RGBLEDs::getBrightness() methods to match recent MicroPython library updates.
   * Simplified and fixed a few bugs in my C implementation of the RGBLEDs::hsv2rgb() method.
   * Remove buzzer click upon device reset.
+  * Fixes to BumpSensors class constructor and documentation for read() method.
 * 0.1.1 (2023-4-4): Second alpha release from community with Motor & Buzzer PWM fixes.
 * 0.1.0 (2023-4-4): Initial alpha release from community.
