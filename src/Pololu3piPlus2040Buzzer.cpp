@@ -48,10 +48,11 @@ void Buzzer::playFrequency(unsigned int freq, unsigned int dur,
   // Initialize the PWM slice to the desired frequency.
   gpio_set_function(buzzerPin, GPIO_FUNC_PWM);
   uint32_t sliceNo = pwm_gpio_to_slice_num(buzzerPin);
+  uint32_t channelNo = pwm_gpio_to_channel(buzzerPin);
   pwm_config config = pwm_get_default_config();
   pwm_config_set_clkdiv(&config, div + (1.0f / 32.0f));
   pwm_config_set_wrap(&config, intTop-1);
-  pwm_init(sliceNo, &config, false);
+  pwm_init(sliceNo, channelNo, &config, false);
 
   // Set the duty cycle based on the volume level and then start the PWM slice once everything is configured.
   assert ( volume <= 15 );
