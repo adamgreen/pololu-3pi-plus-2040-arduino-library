@@ -14,7 +14,7 @@
 */
 // Classes to control the 6 addressable LEDs and the single yellow LED
 // on the Pololu 3π+ 2040 robot.
-#include "Pololu3PiPLus2040LEDs.h"
+#include "Pololu3piPlus2040LEDs.h"
 
 namespace Pololu3piPlus2040
 {

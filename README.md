@@ -94,6 +94,8 @@ This library also references several other Arduino libraries which are used to h
 * [Pushbutton](https://github.com/pololu/pushbutton-arduino)
 
 ## Version history
+* 0.1.4 (2024-11-20): Fifth alpha release from community with 1 bug fix:
+  * Fixed Issue #1 - Misnamed files
 * 0.1.3 (2023-6-18): Fourth alpha release from community with 1 bug fix:
   * Fixed failure to compile Buzzer::playFrequency() reported by gis81576 on Pololu forum.
 * 0.1.2 (2023-4-8): Third alpha release from community with a few updates:
